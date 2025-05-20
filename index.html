@@ -10,8 +10,8 @@
             font-family: 'Inter', sans-serif;
             overscroll-behavior: none; 
         }
+        /* Adjusted control panel height for mobile vs desktop */
         .control-panel {
-            height: calc(100vh - 1rem); 
             overflow-y: auto;
         }
         .canvas-container {
@@ -107,10 +107,13 @@
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col md:flex-row h-screen overflow-hidden transition-colors duration-300">
 
-    <div class="w-full md:w-80 lg:w-96 bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 transition-colors duration-300">
+    <div class="w-full md:w-80 lg:w-96 bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 transition-colors duration-300 h-[55vh] md:h-[calc(100vh-1rem)]">
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold text-blue-400">Image Editor Pro</h1>
-            </div>
+            <a href="#" onclick="location.reload(); return false;" class="text-blue-400 hover:text-blue-300" title="Refresh Page">
+                <i class="fas fa-sync-alt fa-lg"></i>
+            </a>
+        </div>
 
         <div class="mb-4">
             <label for="imageUpload" class="block text-sm font-medium text-gray-300 mb-1">Upload Image</label>
@@ -227,7 +230,7 @@
 
     </div>
 
-    <div class="flex-grow bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300" id="canvasHost">
+    <div class="flex-grow bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
         <div class="canvas-container shadow-lg rounded-md bg-gray-700 transition-colors duration-300"> 
             <canvas id="imageCanvas"></canvas>
         </div>
@@ -295,7 +298,7 @@
         setupTabs(); // Call tab setup
 
         function setupTabs() {
-            const activeClasses = ['bg-blue-500', 'text-white']; // Simplified for forced dark mode
+            const activeClasses = ['bg-blue-500', 'text-white']; 
             const inactiveClasses = ['text-gray-400', 'hover:text-gray-200', 'hover:bg-gray-700'];
 
             tabButtons.forEach(button => {
@@ -824,4 +827,4 @@
 
     </script>
 </body>
-</html>
+</ht
