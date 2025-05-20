@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class=""> <head>
+<html lang="en" class="dark"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Editor Pro - Dark Mode</title>
@@ -20,7 +20,6 @@
             align-items: center;
             width: 100%;
             height: 100%;
-            /* background-color set by Tailwind dark mode variants */
             overflow: hidden; 
             position: relative; 
         }
@@ -54,12 +53,10 @@
         .crop-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
         .crop-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: ew-resize; }
         .crop-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: ew-resize; }
+        
         .crop-grid-line {
             position: absolute;
-            background-color: rgba(255, 255, 255, 0.5); /* Light grid lines, might need dark mode variant */
-        }
-        .dark .crop-grid-line { /* Dark mode specific grid line */
-            background-color: rgba(0, 0, 0, 0.4);
+            background-color: rgba(0, 0, 0, 0.4); /* Dark mode grid line */
         }
         .crop-grid-line.vertical { width: 1px; height: 100%; }
         .crop-grid-line.horizontal { height: 1px; width: 100%; }
@@ -67,172 +64,97 @@
         .tab-button {
             transition: background-color 0.3s, color 0.3s;
         }
-        .tab-button.active {
-            /* background-color and color set by Tailwind dark mode variants */
-        }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .loader {
-            border: 4px solid #f3f3f3; /* Light grey */
-            border-top: 4px solid #3b82f6; /* Blue */
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-        }
-        .dark .loader { /* Dark mode loader */
+        .loader { /* For dark mode */
              border: 4px solid #4b5563; /* dark:gray-600 */
              border-top: 4px solid #60a5fa; /* dark:blue-400 */
+             border-radius: 50%;
+             width: 30px;
+             height: 30px;
+             animation: spin 1s linear infinite;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Custom scrollbar for control panel */
+        /* Custom scrollbar for control panel in dark mode */
         .control-panel::-webkit-scrollbar { width: 8px; }
-        .control-panel::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .control-panel::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
-        .control-panel::-webkit-scrollbar-thumb:hover { background: #555; }
+        .control-panel::-webkit-scrollbar-track { background: #374151; border-radius: 10px; } /* dark:bg-gray-700 */
+        .control-panel::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; } /* dark:bg-gray-500 */
+        .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; } /* dark:bg-gray-400 */
 
-        .dark .control-panel::-webkit-scrollbar-track { background: #374151; } /* dark:bg-gray-700 */
-        .dark .control-panel::-webkit-scrollbar-thumb { background: #6b7280; } /* dark:bg-gray-500 */
-        .dark .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; } /* dark:bg-gray-400 */
-
-        /* Dark mode for inputs, select */
-        .dark input[type="number"], .dark input[type="text"], .dark select, .dark input[type="range"] {
+        /* Inputs, select in dark mode */
+        input[type="number"], input[type="text"], select, input[type="range"] {
             background-color: #374151; /* dark:bg-gray-700 */
             color: #f3f4f6; /* dark:text-gray-100 */
             border-color: #4b5563; /* dark:border-gray-600 */
         }
-        .dark input[type="number"]::placeholder, .dark input[type="text"]::placeholder {
+        input[type="number"]::placeholder, input[type="text"]::placeholder {
             color: #9ca3af; /* dark:text-gray-400 */
         }
-         /* Dark mode for file input button styling */
-        .dark .file\:bg-blue-50 { background-color: #1e3a8a; /* dark:bg-blue-800 or similar */}
-        .dark .file\:text-blue-700 { color: #93c5fd; /* dark:text-blue-300 or similar */}
-        .dark .hover\:file\:bg-blue-100 { background-color: #1e40af; /* dark:hover:bg-blue-700 or similar */}
-
-        /* Dark mode toggle switch styling */
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .theme-switch {
-            display: inline-block;
-            height: 24px; /* Increased height for better touch target */
-            position: relative;
-            width: 44px; /* Increased width */
-        }
-        .theme-switch input {
-            display:none;
-        }
-        .slider {
-            background-color: #ccc;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-        }
-        .slider:before {
-            background-color: #fff;
-            bottom: 3px; /* Adjusted for new height */
-            content: "";
-            height: 18px; /* Adjusted for new height */
-            left: 3px; /* Adjusted for new height */
-            position: absolute;
-            transition: .4s;
-            width: 18px; /* Adjusted for new height */
-        }
-        input:checked + .slider {
-            background-color: #3b82f6; /* blue-500 */
-        }
-        .dark input:checked + .slider {
-            background-color: #60a5fa; /* dark:blue-400 */
-        }
-        input:checked + .slider:before {
-            transform: translateX(20px); /* Adjusted for new width */
-        }
-        .slider.round {
-            border-radius: 24px; /* Adjusted for new height */
-        }
-        .slider.round:before {
-            border-radius: 50%;
-        }
-
+        /* File input button styling in dark mode */
+        .file\:bg-blue-800 { background-color: #1e3a8a !important; }
+        .file\:text-blue-300 { color: #93c5fd !important; }
+        .hover\:file\:bg-blue-700 { background-color: #1e40af !important; }
     </style>
     <script>
-        // Tailwind dark mode configuration
-        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark')
-        } else {
-          document.documentElement.classList.remove('dark')
-        }
+        // Force dark mode by always adding the 'dark' class to HTML element.
+        document.documentElement.classList.add('dark');
     </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col md:flex-row h-screen overflow-hidden transition-colors duration-300">
+<body class="bg-gray-900 text-gray-100 flex flex-col md:flex-row h-screen overflow-hidden transition-colors duration-300">
 
-    <div class="w-full md:w-80 lg:w-96 bg-white dark:bg-gray-800 p-4 shadow-lg control-panel flex-shrink-0 transition-colors duration-300">
+    <div class="w-full md:w-80 lg:w-96 bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 transition-colors duration-300">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400">Image Editor Pro</h1>
-            <div class="theme-switch-wrapper">
-                <span class="text-sm text-gray-600 dark:text-gray-400"><i class="fas fa-sun"></i></span>
-                <label class="theme-switch" for="themeToggleCheckbox">
-                    <input type="checkbox" id="themeToggleCheckbox" />
-                    <div class="slider round"></div>
-                </label>
-                <span class="text-sm text-gray-600 dark:text-gray-400"><i class="fas fa-moon"></i></span>
+            <h1 class="text-2xl font-bold text-blue-400">Image Editor Pro</h1>
             </div>
-        </div>
 
         <div class="mb-4">
-            <label for="imageUpload" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Image</label>
-            <input type="file" id="imageUpload" accept="image/*" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-800 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-700 cursor-pointer">
+            <label for="imageUpload" class="block text-sm font-medium text-gray-300 mb-1">Upload Image</label>
+            <input type="file" id="imageUpload" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-800 file:text-blue-300 hover:file:bg-blue-700 cursor-pointer">
         </div>
         
         <button id="resetImage" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mb-4 text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>
             <i class="fas fa-undo mr-2"></i>Reset to Original
         </button>
 
-        <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="mb-4 border-b border-gray-700">
             <nav class="flex -mb-px space-x-1" aria-label="Tabs">
-                <button class="tab-button active w-1/3 py-2 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 data-[active=true]:bg-blue-500 data-[active=true]:text-white dark:data-[active=true]:bg-blue-500 dark:data-[active=true]:text-white" data-tab="resize">Resize</button>
-                <button class="tab-button w-1/3 py-2 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 data-[active=true]:bg-blue-500 data-[active=true]:text-white dark:data-[active=true]:bg-blue-500 dark:data-[active=true]:text-white" data-tab="crop">Crop</button>
-                <button class="tab-button w-1/3 py-2 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 data-[active=true]:bg-blue-500 data-[active=true]:text-white dark:data-[active=true]:bg-blue-500 dark:data-[active=true]:text-white" data-tab="export">Export</button>
+                <button class="tab-button active w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="resize">Resize</button>
+                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="crop">Crop</button>
+                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="export">Export</button>
             </nav>
         </div>
 
         <div id="tab-resize" class="tab-content active space-y-4">
             <div>
-                <label for="resizePercent" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Resize by Percentage: <span id="resizePercentValue">100</span>%</label>
-                <input type="range" id="resizePercent" min="1" max="200" value="100" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500 dark:accent-blue-400">
+                <label for="resizePercent" class="block text-sm font-medium text-gray-300">Resize by Percentage: <span id="resizePercentValue">100</span>%</label>
+                <input type="range" id="resizePercent" min="1" max="200" value="100" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400">
             </div>
             <div class="grid grid-cols-2 gap-2 items-end">
                 <div>
-                    <label for="resizeWidth" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Width (px)</label>
-                    <input type="number" id="resizeWidth" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <label for="resizeWidth" class="block text-sm font-medium text-gray-300">Width (px)</label>
+                    <input type="number" id="resizeWidth" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2 bg-gray-700 text-gray-100">
                 </div>
                 <div>
-                    <label for="resizeHeight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Height (px)</label>
-                    <input type="number" id="resizeHeight" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <label for="resizeHeight" class="block text-sm font-medium text-gray-300">Height (px)</label>
+                    <input type="number" id="resizeHeight" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2 bg-gray-700 text-gray-100">
                 </div>
             </div>
             <div class="flex items-center">
-                <input id="aspectLock" type="checkbox" checked class="h-4 w-4 text-blue-600 dark:text-blue-400 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700">
-                <label for="aspectLock" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Lock Aspect Ratio</label>
+                <input id="aspectLock" type="checkbox" checked class="h-4 w-4 text-blue-400 border-gray-600 rounded focus:ring-blue-400 bg-gray-700">
+                <label for="aspectLock" class="ml-2 block text-sm text-gray-300">Lock Aspect Ratio</label>
             </div>
-            <button id="applyResize" class="w-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>Apply Resize</button>
+            <button id="applyResize" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>Apply Resize</button>
         </div>
 
         <div id="tab-crop" class="tab-content space-y-4">
             <div>
-                <label for="aspectRatio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Aspect Ratio</label>
-                <select id="aspectRatio" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <label for="aspectRatio" class="block text-sm font-medium text-gray-300">Aspect Ratio</label>
+                <select id="aspectRatio" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2 bg-gray-700 text-gray-100">
                     <option value="freeform">Freeform</option>
                     <option value="original">Original</option>
                     <option value="1:1">1:1 (Square)</option>
@@ -244,62 +166,72 @@
             </div>
              <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label for="cropWidth" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Crop Width (px)</label>
-                    <input type="number" id="cropWidth" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100" readonly>
+                    <label for="cropWidth" class="block text-sm font-medium text-gray-300">Crop Width (px)</label>
+                    <input type="number" id="cropWidth" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm sm:text-sm p-2 bg-gray-600 text-gray-100" readonly>
                 </div>
                 <div>
-                    <label for="cropHeight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Crop Height (px)</label>
-                    <input type="number" id="cropHeight" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm p-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100" readonly>
+                    <label for="cropHeight" class="block text-sm font-medium text-gray-300">Crop Height (px)</label>
+                    <input type="number" id="cropHeight" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm sm:text-sm p-2 bg-gray-600 text-gray-100" readonly>
                 </div>
             </div>
-            <button id="startCrop" class="w-full bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled><i class="fas fa-crop-alt mr-2"></i>Start/Adjust Crop</button>
-            <button id="applyCrop" class="w-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>Apply Crop</button>
-            <button id="cancelCrop" class="w-full bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>Cancel Crop Mode</button>
+            <button id="startCrop" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled><i class="fas fa-crop-alt mr-2"></i>Start/Adjust Crop</button>
+            <button id="applyCrop" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>Apply Crop</button>
+            <button id="cancelCrop" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>Cancel Crop Mode</button>
         </div>
 
         <div id="tab-export" class="tab-content space-y-4">
             <div>
-                <label for="fileName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">File Name</label>
-                <input type="text" id="fileName" value="edited_image" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <label for="fileName" class="block text-sm font-medium text-gray-300">File Name</label>
+                <input type="text" id="fileName" value="edited_image" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2 bg-gray-700 text-gray-100">
             </div>
             <div>
-                <label for="fileFormat" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Format</label>
-                <select id="fileFormat" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <label for="fileFormat" class="block text-sm font-medium text-gray-300">Format</label>
+                <select id="fileFormat" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2 bg-gray-700 text-gray-100">
                     <option value="image/png">PNG</option>
                     <option value="image/jpeg">JPG</option>
                     <option value="image/webp">WEBP</option>
                 </select>
             </div>
             <div id="qualityContainer">
-                <label for="quality" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quality: <span id="qualityValue">0.9</span></label>
-                <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.9" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500 dark:accent-blue-400">
+                <label for="quality" class="block text-sm font-medium text-gray-300">Quality: <span id="qualityValue">0.9</span></label>
+                <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.9" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400">
             </div>
             <div>
-                <label for="targetFileSize" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Target File Size (KB, optional)</label>
-                <input type="number" id="targetFileSize" placeholder="e.g., 500" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <label for="targetFileSize" class="block text-sm font-medium text-gray-300">Target File Size (KB, optional)</label>
+                <input type="number" id="targetFileSize" placeholder="e.g., 500" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2 bg-gray-700 text-gray-100">
             </div>
-            <button id="downloadButton" class="w-full bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>
+            <button id="downloadButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 dark:disabled:opacity-60" disabled>
                 <i class="fas fa-download mr-2"></i>Download Image
             </button>
             <div id="exportLoader" class="hidden mt-2">
                 <div class="loader"></div>
-                <p class="text-sm text-center text-gray-600 dark:text-gray-400 mt-1">Processing...</p>
+                <p class="text-sm text-center text-gray-400 mt-1">Processing...</p>
             </div>
-            <p id="exportMessage" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
+            <p id="exportMessage" class="text-sm text-gray-400 mt-2"></p>
         </div>
         
-        <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">Image Info:</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Original: <span id="originalDimensions">N/A</span></p>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Current: <span id="currentDimensions">N/A</span></p>
+        <div class="flex-grow"></div>
+
+        <div>
+            <div class="pt-4 border-t border-gray-700">
+                <h3 class="text-md font-semibold text-gray-300 mb-2">Image Info:</h3>
+                <p class="text-sm text-gray-400">Original: <span id="originalDimensions">N/A</span></p>
+                <p class="text-sm text-gray-400">Current: <span id="currentDimensions">N/A</span></p>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-400 text-left">
+                <p>Made by <a href="https://frandez.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-300">frandez.com</a></p>
+                <p class="mt-1">This exists because all other sites are greedy. Took me 10 minutes using AI</p>
+            </div>
         </div>
 
     </div>
 
-    <div class="flex-grow bg-gray-200 dark:bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300" id="canvasHost">
-        <div class="canvas-container shadow-lg rounded-md bg-gray-300 dark:bg-gray-700 transition-colors duration-300"> <canvas id="imageCanvas"></canvas>
-            </div>
-         <div id="canvasMessage" class="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400 text-lg bg-gray-200 dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 transition-colors duration-300">
+    <div class="flex-grow bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300" id="canvasHost">
+        <div class="canvas-container shadow-lg rounded-md bg-gray-700 transition-colors duration-300"> 
+            <canvas id="imageCanvas"></canvas>
+        </div>
+         <div id="canvasMessage" class="absolute inset-0 flex items-center justify-center text-gray-400 text-lg bg-gray-800 bg-opacity-90 transition-colors duration-300">
             <p>Upload an image to start editing.</p>
         </div>
     </div>
@@ -323,8 +255,8 @@
         // Resize
         const resizePercent = document.getElementById('resizePercent');
         const resizePercentValue = document.getElementById('resizePercentValue');
-        const resizeWidthInput = document.getElementById('resizeWidth'); // Renamed for clarity
-        const resizeHeightInput = document.getElementById('resizeHeight'); // Renamed for clarity
+        const resizeWidthInput = document.getElementById('resizeWidth'); 
+        const resizeHeightInput = document.getElementById('resizeHeight'); 
         const aspectLock = document.getElementById('aspectLock');
         const applyResizeBtn = document.getElementById('applyResize');
 
@@ -347,14 +279,10 @@
         const exportLoader = document.getElementById('exportLoader');
         const exportMessage = document.getElementById('exportMessage');
         
-        // Theme Toggle
-        const themeToggleCheckbox = document.getElementById('themeToggleCheckbox');
-
         // State variables
-        let originalImage = null; // Stores the raw Image object from upload
-        let currentImageState = null; // Stores an Image object representing the current state after edits
+        let originalImage = null; 
+        let currentImageState = null; 
         let originalFileName = 'edited_image';
-        // currentImageAspectRatio is now derived from currentImageState directly when needed
         let isCropping = false;
         let cropRect = { x: 0, y: 0, width: 0, height: 0, visualX: 0, visualY: 0, visualWidth: 0, visualHeight: 0 };
         let cropSelectionDiv = null;
@@ -364,30 +292,38 @@
 
         // Initial setup
         disableControls();
-        setupTheme();
+        setupTabs(); // Call tab setup
 
+        function setupTabs() {
+            const activeClasses = ['bg-blue-500', 'text-white']; // Simplified for forced dark mode
+            const inactiveClasses = ['text-gray-400', 'hover:text-gray-200', 'hover:bg-gray-700'];
 
-        function setupTheme() {
-            // Check localStorage for saved theme
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-                themeToggleCheckbox.checked = true;
-            } else {
-                document.documentElement.classList.remove('dark');
-                themeToggleCheckbox.checked = false;
-            }
-
-            themeToggleCheckbox.addEventListener('change', function() {
-                if (this.checked) {
-                    document.documentElement.classList.add('dark');
-                    localStorage.theme = 'dark';
+            tabButtons.forEach(button => {
+                if (button.classList.contains('active')) {
+                    button.classList.add(...activeClasses);
+                    button.classList.remove(...inactiveClasses);
                 } else {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.theme = 'light';
+                    button.classList.add(...inactiveClasses);
+                    button.classList.remove(...activeClasses);
                 }
+
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active', ...activeClasses);
+                        btn.classList.add(...inactiveClasses);
+                    });
+                    button.classList.add('active', ...activeClasses);
+                    button.classList.remove(...inactiveClasses);
+                    
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
+                    
+                    if (button.dataset.tab !== 'crop' && isCropping) {
+                        cancelCropMode();
+                    }
+                });
             });
         }
-
 
         function disableControls() {
             applyResizeBtn.disabled = true;
@@ -400,81 +336,48 @@
         }
 
         function enableControls() {
-            // Enable controls only if currentImageState (the editable version) exists
             if (!currentImageState) return; 
             applyResizeBtn.disabled = false;
             startCropBtn.disabled = false;
             downloadButton.disabled = false;
-            resetImageBtn.disabled = false; // Reset should always be available if an image was loaded
+            resetImageBtn.disabled = false; 
             [resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, aspectRatioSelect, fileNameInput, fileFormatSelect, qualitySlider, targetFileSizeInput].forEach(el => el.disabled = false);
         }
         
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('active', 'bg-blue-500', 'text-white', 'dark:bg-blue-500', 'dark:text-white');
-                    btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-200', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
-                    btn.dataset.active = "false";
-                });
-                button.classList.add('active', 'bg-blue-500', 'text-white', 'dark:bg-blue-500', 'dark:text-white');
-                button.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-200', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
-                button.dataset.active = "true";
-                
-                tabContents.forEach(content => content.classList.remove('active'));
-                document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
-                
-                if (button.dataset.tab !== 'crop' && isCropping) {
-                    cancelCropMode();
-                }
-            });
-             // Set initial active tab style
-            if(button.classList.contains('active')) {
-                button.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-500', 'dark:text-white');
-                button.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-200', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
-                button.dataset.active = "true";
-            }
-        });
-
         imageUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
-                originalFileName = file.name.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_'); // Sanitize
+                originalFileName = file.name.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_'); 
                 fileNameInput.value = originalFileName;
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    // Create the originalImage (pristine copy)
                     originalImage = new Image();
                     originalImage.onload = () => {
-                        // Create currentImageState from the same source for initial state
                         currentImageState = new Image();
                         currentImageState.onload = () => {
-                            drawImageToCanvas(currentImageState); // Draw the current state
+                            drawImageToCanvas(currentImageState); 
                             updateDimensionDisplays(originalImage.width, originalImage.height, currentImageState.width, currentImageState.height);
                             resetResizeControls();
                             enableControls();
                             canvasMessage.classList.add('hidden');
                             if (isCropping) cancelCropMode();
                         };
-                        currentImageState.src = e.target.result; // Load data into currentImageState
+                        currentImageState.src = e.target.result; 
                     };
-                    originalImage.src = e.target.result; // Load data into originalImage
+                    originalImage.src = e.target.result; 
                 };
                 reader.readAsDataURL(file);
             }
         });
         
-        // Function to draw the provided image object to the main canvas, fitting it
         function drawImageToCanvas(imageToDraw) {
             const canvasContainer = document.querySelector('.canvas-container');
             const containerWidth = canvasContainer.clientWidth;
             const containerHeight = canvasContainer.clientHeight;
-
             let drawWidth = imageToDraw.width;
             let drawHeight = imageToDraw.height;
-
             const imageAspectRatio = imageToDraw.width / imageToDraw.height;
             
-            // Fit image within container while maintaining aspect ratio
             if (containerWidth / containerHeight > imageAspectRatio) {
                 drawHeight = containerHeight;
                 drawWidth = drawHeight * imageAspectRatio;
@@ -488,8 +391,6 @@
             ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
             ctx.drawImage(imageToDraw, 0, 0, imageCanvas.width, imageCanvas.height);
             
-            // Update dimension displays based on original and current state
-            // Note: currentImageState might be null if no image is loaded yet.
             updateDimensionDisplays(
                 originalImage ? originalImage.width : 0, 
                 originalImage ? originalImage.height : 0, 
@@ -501,22 +402,19 @@
         function updateDimensionDisplays(origW, origH, currW, currH) {
             originalDimensionsEl.textContent = originalImage ? `${origW} x ${origH} px` : 'N/A';
             currentDimensionsEl.textContent = currentImageState ? `${Math.round(currW)} x ${Math.round(currH)} px` : 'N/A';
-            // Set resize inputs based on the current state's actual dimensions
             resizeWidthInput.value = currentImageState ? Math.round(currentImageState.width) : '';
             resizeHeightInput.value = currentImageState ? Math.round(currentImageState.height) : '';
         }
 
         resetImageBtn.addEventListener('click', () => {
             if (originalImage) {
-                // Create a new Image object for currentImageState from originalImage.src
-                // This ensures currentImageState is a fresh copy, not a reference.
                 currentImageState = new Image();
                 currentImageState.onload = () => {
                     drawImageToCanvas(currentImageState);
-                    resetResizeControls(); // This will now use currentImageState's dimensions
+                    resetResizeControls(); 
                     if (isCropping) cancelCropMode();
                     exportMessage.textContent = '';
-                    fileNameInput.value = originalFileName; // Reset filename
+                    fileNameInput.value = originalFileName; 
                 };
                 currentImageState.src = originalImage.src;
             }
@@ -525,7 +423,7 @@
         function resetResizeControls() {
             resizePercent.value = 100;
             resizePercentValue.textContent = '100';
-            if (currentImageState) { // Base resize inputs on the actual dimensions of currentImageState
+            if (currentImageState) { 
                 resizeWidthInput.value = currentImageState.width;
                 resizeHeightInput.value = currentImageState.height;
             }
@@ -535,7 +433,6 @@
             if (!currentImageState) return;
             const percent = parseInt(resizePercent.value);
             resizePercentValue.textContent = percent;
-            // Calculate new dimensions based on currentImageState's actual dimensions
             const newWidth = Math.round(currentImageState.width * (percent / 100));
             const newHeight = Math.round(currentImageState.height * (percent / 100));
             resizeWidthInput.value = newWidth;
@@ -562,7 +459,6 @@
         
         function updatePercentSliderFromDimensions(w, h) {
             if (!currentImageState) return;
-            // Calculate percentage based on currentImageState's actual dimensions
             const percentW = (w / currentImageState.width) * 100;
             const percentH = (h / currentImageState.height) * 100;
             const avgPercent = Math.round((percentW + percentH) / 2);
@@ -576,7 +472,6 @@
             const newHeight = parseInt(resizeHeightInput.value);
 
             if (isNaN(newWidth) || isNaN(newHeight) || newWidth <= 0 || newHeight <= 0) {
-                // Consider replacing alert with a less obtrusive UI message
                 exportMessage.textContent = 'Error: Invalid resize dimensions.';
                 console.error('Please enter valid width and height.');
                 return;
@@ -586,21 +481,17 @@
             const tempCtx = tempCanvas.getContext('2d');
             tempCanvas.width = newWidth;
             tempCanvas.height = newHeight;
-            // Draw the currentImageState (which holds the up-to-date image) onto the temp canvas
             tempCtx.drawImage(currentImageState, 0, 0, newWidth, newHeight);
 
-            // Update currentImageState with the resized image data
             const newBaseImage = new Image();
             newBaseImage.onload = () => {
                 currentImageState = newBaseImage; 
-                drawImageToCanvas(currentImageState); // Redraw main canvas with the new currentImageState
-                resetResizeControls(); // Reset controls based on the new currentImageState dimensions
+                drawImageToCanvas(currentImageState); 
+                resetResizeControls(); 
             }
             newBaseImage.src = tempCanvas.toDataURL();
         });
 
-        // --- CROP LOGIC ---
-        // (Largely unchanged but ensure it operates on currentImageState and scales crop selection to it)
         startCropBtn.addEventListener('click', () => {
             if (!currentImageState) return;
             isCropping = true;
@@ -610,17 +501,17 @@
             applyResizeBtn.disabled = true; 
             imageCanvas.style.cursor = 'crosshair';
             
+            const activeClasses = ['bg-blue-500', 'text-white'];
+            const inactiveClasses = ['text-gray-400', 'hover:text-gray-200', 'hover:bg-gray-700'];
             tabButtons.forEach(btn => {
-                if(btn.dataset.tab === 'crop') {
-                    btn.classList.add('active', 'bg-blue-500', 'text-white', 'dark:bg-blue-500', 'dark:text-white');
-                    btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-200', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
-                    btn.dataset.active = "true";
-                } else {
-                    btn.classList.remove('active', 'bg-blue-500', 'text-white', 'dark:bg-blue-500', 'dark:text-white');
-                    btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-200', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
-                    btn.dataset.active = "false";
-                }
+                btn.classList.remove('active', ...activeClasses);
+                btn.classList.add(...inactiveClasses);
             });
+            const cropTabButton = document.querySelector('.tab-button[data-tab="crop"]');
+            if (cropTabButton) {
+                cropTabButton.classList.add('active', ...activeClasses);
+                cropTabButton.classList.remove(...inactiveClasses);
+            }
             tabContents.forEach(content => content.classList.remove('active'));
             document.getElementById('tab-crop').classList.add('active');
             initializeCropSelection();
@@ -640,20 +531,15 @@
 
         function initializeCropSelection() {
             removeCropVisuals(); 
-
             cropSelectionDiv = document.createElement('div');
             cropSelectionDiv.className = 'crop-selection';
             canvasHost.appendChild(cropSelectionDiv);
-
-            // Initial crop rectangle based on imageCanvas display size
             const initialWidth = imageCanvas.width * 0.8;
             const initialHeight = imageCanvas.height * 0.8;
             const initialX = (imageCanvas.width - initialWidth) / 2;
             const initialY = (imageCanvas.height - initialHeight) / 2;
-            
             cropRect = { x: initialX, y: initialY, width: initialWidth, height: initialHeight };
             updateCropSelectionVisuals(); 
-
             cropSelectionDiv.addEventListener('mousedown', onCropMouseDown);
             document.addEventListener('mousemove', onCropMouseMove);
             document.addEventListener('mouseup', onCropMouseUp);
@@ -674,24 +560,22 @@
         }
 
         function updateCropSelectionVisuals() {
-            if (!cropSelectionDiv || !isCropping) return;
-
+            if (!cropSelectionDiv || !isCropping || !currentImageState ) return; 
             const canvasBoundingRect = imageCanvas.getBoundingClientRect(); 
             const hostBoundingRect = canvasHost.getBoundingClientRect(); 
-
             cropRect.visualX = canvasBoundingRect.left - hostBoundingRect.left + cropRect.x;
             cropRect.visualY = canvasBoundingRect.top - hostBoundingRect.top + cropRect.y;
             cropRect.visualWidth = cropRect.width;
             cropRect.visualHeight = cropRect.height;
-
             cropSelectionDiv.style.left = `${cropRect.visualX}px`;
             cropSelectionDiv.style.top = `${cropRect.visualY}px`;
             cropSelectionDiv.style.width = `${cropRect.visualWidth}px`;
             cropSelectionDiv.style.height = `${cropRect.visualHeight}px`;
 
-            cropWidthEl.value = Math.round(cropRect.width * (currentImageState.width / imageCanvas.width)); // Display actual pixel size
-            cropHeightEl.value = Math.round(cropRect.height * (currentImageState.height / imageCanvas.height)); // Display actual pixel size
-
+            const scaleFactorX = imageCanvas.width > 0 ? currentImageState.width / imageCanvas.width : 1;
+            const scaleFactorY = imageCanvas.height > 0 ? currentImageState.height / imageCanvas.height : 1;
+            cropWidthEl.value = Math.round(cropRect.width * scaleFactorX); 
+            cropHeightEl.value = Math.round(cropRect.height * scaleFactorY);
 
             const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
             if (cropHandles.length === 0) {
@@ -704,15 +588,13 @@
                     handle.addEventListener('mousedown', onCropMouseDown);
                 });
             }
-            
-            if (cropGridLines.length === 0 && cropSelectionDiv) { // Ensure cropSelectionDiv exists
+            if (cropGridLines.length === 0 && cropSelectionDiv) { 
                 for (let i = 1; i < 3; i++) { 
                     const vLine = document.createElement('div');
                     vLine.className = 'crop-grid-line vertical';
                     vLine.style.left = `${(100/3) * i}%`;
                     cropSelectionDiv.appendChild(vLine);
                     cropGridLines.push(vLine);
-
                     const hLine = document.createElement('div');
                     hLine.className = 'crop-grid-line horizontal';
                     hLine.style.top = `${(100/3) * i}%`;
@@ -724,31 +606,25 @@
         
         aspectRatioSelect.addEventListener('change', () => {
             if (!isCropping || !cropSelectionDiv || !currentImageState) return;
-            
             const selectedRatio = aspectRatioSelect.value;
             if (selectedRatio === 'freeform') return;
-
             let ratio;
             if (selectedRatio === 'original') {
-                ratio = currentImageState.width / currentImageState.height; // Use actual image aspect ratio
+                ratio = currentImageState.width / currentImageState.height; 
             } else {
                 const parts = selectedRatio.split(':').map(Number);
                 ratio = parts[0] / parts[1];
             }
-
-            const currentVisualWidth = cropRect.width; // This is visual width on canvas
+            const currentVisualWidth = cropRect.width; 
             let newVisualHeight = currentVisualWidth / ratio;
-
             if (cropRect.y + newVisualHeight > imageCanvas.height) { 
                 newVisualHeight = imageCanvas.height - cropRect.y;
-                cropRect.width = newVisualHeight * ratio; // Adjust visual width
+                cropRect.width = newVisualHeight * ratio; 
             } else {
-                 cropRect.height = newVisualHeight; // Adjust visual height
+                 cropRect.height = newVisualHeight; 
             }
-            
             cropRect.width = Math.min(cropRect.width, imageCanvas.width - cropRect.x);
             cropRect.height = Math.min(cropRect.height, imageCanvas.height - cropRect.y);
-
             updateCropSelectionVisuals();
         });
 
@@ -771,13 +647,11 @@
             const mouseY = e.clientY - hostBoundingRect.top;
             const deltaX = mouseX - dragInfo.startX;
             const deltaY = mouseY - dragInfo.startY;
-            
             let newX = dragInfo.originalRect.x;
             let newY = dragInfo.originalRect.y;
             let newWidth = dragInfo.originalRect.width;
             let newHeight = dragInfo.originalRect.height;
-            const minSize = 20; // Min visual size on canvas
-
+            const minSize = 20; 
             if (dragInfo.target === 'selection') {
                 newX = dragInfo.originalRect.x + deltaX;
                 newY = dragInfo.originalRect.y + deltaY;
@@ -786,17 +660,15 @@
                 if (dragInfo.target.includes('e')) { newWidth = dragInfo.originalRect.width + deltaX; }
                 if (dragInfo.target.includes('n')) { newY = dragInfo.originalRect.y + deltaY; newHeight = dragInfo.originalRect.height - deltaY; }
                 if (dragInfo.target.includes('s')) { newHeight = dragInfo.originalRect.height + deltaY; }
-
                 const selectedRatioOption = aspectRatioSelect.value;
                 if (selectedRatioOption !== 'freeform') {
                     let targetAspectRatio;
                     if (selectedRatioOption === 'original') {
-                        targetAspectRatio = currentImageState.width / currentImageState.height; // Actual image aspect ratio
+                        targetAspectRatio = currentImageState.width / currentImageState.height; 
                     } else {
                         const parts = selectedRatioOption.split(':').map(Number);
                         targetAspectRatio = parts[0] / parts[1];
                     }
-
                     if (dragInfo.target.includes('w') || dragInfo.target.includes('e')) { 
                         const adjustedHeight = newWidth / targetAspectRatio;
                         if (dragInfo.target.includes('n')) newY += newHeight - adjustedHeight; 
@@ -814,15 +686,12 @@
                     }
                 }
             }
-            
             if (newWidth < minSize) { if (dragInfo.target.includes('w')) newX = cropRect.x + cropRect.width - minSize; newWidth = minSize; }
             if (newHeight < minSize) { if (dragInfo.target.includes('n')) newY = cropRect.y + cropRect.height - minSize; newHeight = minSize; }
-
             newX = Math.max(0, Math.min(newX, imageCanvas.width - newWidth));
             newY = Math.max(0, Math.min(newY, imageCanvas.height - newHeight));
             newWidth = Math.min(newWidth, imageCanvas.width - newX);
             newHeight = Math.min(newHeight, imageCanvas.height - newY);
-
             cropRect.x = newX; cropRect.y = newY; cropRect.width = newWidth; cropRect.height = newHeight;
             updateCropSelectionVisuals();
         }
@@ -834,66 +703,51 @@
 
         applyCropBtn.addEventListener('click', () => {
             if (!currentImageState || !isCropping || !cropSelectionDiv) return;
-
-            // Scale crop rectangle (visual, on canvas) to actual image dimensions
             const scaleX = currentImageState.width / imageCanvas.width;
             const scaleY = currentImageState.height / imageCanvas.height;
-
             const sx = cropRect.x * scaleX;
             const sy = cropRect.y * scaleY;
             const sWidth = cropRect.width * scaleX;
             const sHeight = cropRect.height * scaleY;
-
             if (sWidth <= 0 || sHeight <= 0) {
-                // Consider replacing alert with a less obtrusive UI message
                 exportMessage.textContent = 'Error: Invalid crop area.';
                 console.error("Invalid crop area.");
                 return;
             }
-
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = sWidth;
             tempCanvas.height = sHeight;
             const tempCtx = tempCanvas.getContext('2d');
-
-            // Draw the cropped portion of currentImageState (actual image) to tempCanvas
             tempCtx.drawImage(currentImageState, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
-            
             const newBaseImage = new Image();
             newBaseImage.onload = () => {
-                currentImageState = newBaseImage; // Update currentImageState with the cropped image
+                currentImageState = newBaseImage; 
                 drawImageToCanvas(currentImageState); 
-                resetResizeControls(); // Reset controls based on new currentImageState dimensions
+                resetResizeControls(); 
             }
             newBaseImage.src = tempCanvas.toDataURL();
             cancelCropMode(); 
         });
 
-        // --- EXPORT LOGIC ---
         fileFormatSelect.addEventListener('change', () => {
             qualityContainer.style.display = (fileFormatSelect.value === 'image/png') ? 'none' : 'block';
         });
         qualitySlider.addEventListener('input', () => qualityValue.textContent = qualitySlider.value);
 
         downloadButton.addEventListener('click', async () => {
-            if (!currentImageState) return; // Use currentImageState for export
-
+            if (!currentImageState) return; 
             exportLoader.classList.remove('hidden');
             exportMessage.textContent = '';
             downloadButton.disabled = true;
-
             const format = fileFormatSelect.value;
             let quality = parseFloat(qualitySlider.value);
             const targetSizeKB = parseFloat(targetFileSizeInput.value);
             const filename = `${fileNameInput.value || 'edited_image'}.${format.split('/')[1]}`;
-
-            // Create a new canvas with the dimensions of currentImageState to export the full resolution image
             const exportCanvas = document.createElement('canvas');
             exportCanvas.width = currentImageState.width;
             exportCanvas.height = currentImageState.height;
             const exportCtx = exportCanvas.getContext('2d');
-            exportCtx.drawImage(currentImageState, 0, 0); // Draw the final currentImageState
-
+            exportCtx.drawImage(currentImageState, 0, 0); 
             try {
                 let blob;
                 if (!isNaN(targetSizeKB) && (format === 'image/jpeg' || format === 'image/webp')) {
@@ -901,12 +755,10 @@
                     let currentQuality = quality; 
                     let minQuality = 0.1; let maxQuality = 1.0;
                     let bestBlob = null; let bestBlobSize = Infinity;
-
                     for (let i = 0; i < 10; i++) {
-                        const dataUrl = exportCanvas.toDataURL(format, currentQuality); // Use exportCanvas
+                        const dataUrl = exportCanvas.toDataURL(format, currentQuality); 
                         blob = await dataURLtoBlob(dataUrl);
                         const currentSizeKB = blob.size / 1024;
-
                         if (currentSizeKB <= targetSizeKB) {
                             if (!bestBlob || currentSizeKB > bestBlob.size / 1024) {
                                 bestBlob = blob; bestBlobSize = currentSizeKB;
@@ -924,21 +776,19 @@
                         if (Math.abs(maxQuality - minQuality) < 0.01) break; 
                         exportMessage.textContent = `Optimizing... Try ${i+1}, Q=${currentQuality.toFixed(2)}, Size=${currentSizeKB.toFixed(1)}KB`;
                     }
-                    
                     if (bestBlob) {
                         blob = bestBlob;
                         exportMessage.textContent = `Achieved size: ${bestBlobSize.toFixed(1)}KB (Target: ${targetSizeKB}KB).`;
                     } else {
-                        const dataUrl = exportCanvas.toDataURL(format, quality); // Use exportCanvas
+                        const dataUrl = exportCanvas.toDataURL(format, quality); 
                         blob = await dataURLtoBlob(dataUrl);
                         exportMessage.textContent = `Could not meet target. Actual: ${(blob.size / 1024).toFixed(1)}KB. Q ${quality.toFixed(2)}.`;
                     }
                 } else {
-                    const dataUrl = exportCanvas.toDataURL(format, (format === 'image/png') ? undefined : quality); // Use exportCanvas
+                    const dataUrl = exportCanvas.toDataURL(format, (format === 'image/png') ? undefined : quality); 
                     blob = await dataURLtoBlob(dataUrl);
                     exportMessage.textContent = `Exported. Q ${quality.toFixed(2)}. Size: ${(blob.size / 1024).toFixed(1)}KB.`;
                 }
-
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
@@ -964,8 +814,8 @@
         }
 
         const debouncedRedraw = debounce(() => {
-            if (currentImageState) { // Use currentImageState
-                drawImageToCanvas(currentImageState); // Redraw currentImageState
+            if (currentImageState) { 
+                drawImageToCanvas(currentImageState); 
                 if (isCropping && cropSelectionDiv) updateCropSelectionVisuals();
             }
         }, 250); 
