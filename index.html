@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fran's Free Image Editor</title>
+    <title>Fran's Free Image Editor - Enhanced</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -28,6 +28,7 @@
             max-height: 100%;
             object-fit: contain;
             cursor: grab;
+            transition: transform 0.2s ease-out; /* For zoom */
         }
         .crop-selection {
             position: absolute;
@@ -85,10 +86,11 @@
         .control-panel::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; } 
         .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; } 
 
-        input[type="number"], input[type="text"], select, input[type="range"] {
+        input[type="number"], input[type="text"], select, input[type="range"], input[type="color"] {
             background-color: #374151; 
             color: #f3f4f6; 
             border-color: #4b5563; 
+            padding: 0.5rem; /* Consistent padding */
         }
         input[type="number"]::placeholder, input[type="text"]::placeholder {
             color: #9ca3af; 
@@ -150,6 +152,57 @@
         .notification.error { background-color: #EF4444; /* red-500 */ }
         .notification.warning { background-color: #F59E0B; /* amber-500 */ }
 
+        /* Tooltip styles */
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-5px);
+            background-color: #1f2937; /* gray-800 */
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 100;
+        }
+        [data-tooltip] {
+            position: relative;
+        }
+        .zoom-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            background-color: rgba(49, 49, 49, 0.7);
+            padding: 8px;
+            border-radius: 8px;
+            z-index: 5;
+        }
+        .zoom-controls button {
+            background-color: #4b5563; /* gray-600 */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .zoom-controls button:hover {
+            background-color: #6b7280; /* gray-500 */
+        }
+        .zoom-controls span {
+            color: white;
+            font-size: 14px;
+            padding: 0 5px;
+            line-height: 30px;
+        }
 
     </style>
     <script>
@@ -161,14 +214,20 @@
     <div class="w-full md:w-96 bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-[60vh] md:h-screen">
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold text-blue-400">Fran's Free Image Editor</h1>
-            <a href="#" onclick="location.reload(); return false;" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700" title="Refresh Page">
-                <i class="fas fa-sync-alt fa-lg"></i>
-            </a>
+            <div class="flex items-center space-x-2">
+                <button id="undoButton" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" title="Undo Last Action" data-tooltip="Undo Last Action (Ctrl+Z)" disabled>
+                    <i class="fas fa-undo fa-lg"></i>
+                </button>
+                <a href="#" onclick="location.reload(); return false;" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700" title="Refresh Page & Clear All" data-tooltip="Refresh Page & Clear All">
+                    <i class="fas fa-sync-alt fa-lg"></i>
+                </a>
+            </div>
         </div>
 
         <div class="mb-4">
             <label for="imageUpload" class="block text-sm font-medium text-gray-300 mb-1">Upload Image(s)</label>
             <input type="file" id="imageUpload" accept="image/*" multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-800 file:text-blue-300 hover:file:bg-blue-700 cursor-pointer">
+            <p id="loadedFileName" class="text-xs text-gray-500 mt-1 truncate"></p>
         </div>
 
         <div id="imageSelectorContainer" class="mb-4 hidden">
@@ -177,15 +236,16 @@
                 </div>
         </div>
         
-        <button id="resetImage" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mb-4 text-sm disabled:opacity-50" disabled>
+        <button id="resetImage" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mb-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Reset active image to its original state">
             <i class="fas fa-undo mr-2"></i>Reset Active Image
         </button>
 
         <div class="mb-4 border-b border-gray-700">
             <nav class="flex -mb-px space-x-1" aria-label="Tabs">
-                <button class="tab-button active w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="resize">Resize</button>
-                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="crop">Crop</button>
-                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="export">Export</button>
+                <button class="tab-button active w-1/4 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="resize" data-tooltip="Resize options">Resize</button>
+                <button class="tab-button w-1/4 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="crop" data-tooltip="Crop options">Crop</button>
+                <button class="tab-button w-1/4 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="adjust" data-tooltip="Adjustments & Filters">Adjust</button>
+                <button class="tab-button w-1/4 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="export" data-tooltip="Export options">Export</button>
             </nav>
         </div>
 
@@ -208,7 +268,7 @@
                 <input id="aspectLock" type="checkbox" checked class="h-4 w-4 text-blue-400 border-gray-600 rounded focus:ring-blue-400 bg-gray-700">
                 <label for="aspectLock" class="ml-2 block text-sm text-gray-300">Lock Aspect Ratio</label>
             </div>
-            <button id="applyResize" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50" disabled>Apply Resize to Active</button>
+            <button id="applyResize" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Apply current resize settings">Apply Resize to Active</button>
         </div>
 
         <div id="tab-crop" class="tab-content space-y-4">
@@ -218,8 +278,8 @@
                     <option value="freeform">Freeform</option>
                     <option value="original">Original</option>
                     <option value="1:1">1:1 (Square)</option>
-                    <option value="4:3">4:3 (Monitor)</option>
-                    <option value="3:4">3:4 (Portrait Monitor)</option>
+                    <option value="4:3">4:3 (Standard)</option>
+                    <option value="3:4">3:4 (Portrait Standard)</option>
                     <option value="16:9">16:9 (Widescreen)</option>
                     <option value="9:16">9:16 (Portrait Widescreen)</option>
                 </select>
@@ -234,10 +294,61 @@
                     <input type="number" id="cropHeight" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm sm:text-sm p-2 bg-gray-600" readonly>
                 </div>
             </div>
-            <button id="startCrop" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50" disabled><i class="fas fa-crop-alt mr-2"></i>Start/Adjust Crop</button>
-            <button id="applyCrop" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50" disabled>Apply Crop</button>
-            <button id="cancelCrop" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50" disabled>Cancel Crop Mode</button>
+            <button id="startCrop" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Activate crop selection tool"><i class="fas fa-crop-alt mr-2"></i>Start/Adjust Crop</button>
+            <button id="applyCrop" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Apply current crop selection">Apply Crop</button>
+            <button id="cancelCrop" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Cancel current crop operation">Cancel Crop Mode</button>
         </div>
+
+        <div id="tab-adjust" class="tab-content space-y-4">
+            <div class="space-y-2">
+                <h4 class="text-sm font-medium text-gray-300">Transform</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="rotateLeft" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Rotate 90° Left"><i class="fas fa-rotate-left mr-1"></i> Rotate Left</button>
+                    <button id="rotateRight" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Rotate 90° Right"><i class="fas fa-rotate-right mr-1"></i> Rotate Right</button>
+                    <button id="flipHorizontal" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Flip Horizontal"><i class="fas fa-arrows-left-right mr-1"></i> Flip Horizontal</button>
+                    <button id="flipVertical" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Flip Vertical"><i class="fas fa-arrows-up-down mr-1"></i> Flip Vertical</button>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <h4 class="text-sm font-medium text-gray-300">Filters & Adjustments</h4>
+                <div>
+                    <label for="brightness" class="block text-xs font-medium text-gray-300">Brightness: <span id="brightnessValue">100</span>%</label>
+                    <input type="range" id="brightness" min="0" max="200" value="100" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400 disabled:cursor-not-allowed" disabled>
+                </div>
+                <div>
+                    <label for="contrast" class="block text-xs font-medium text-gray-300">Contrast: <span id="contrastValue">100</span>%</label>
+                    <input type="range" id="contrast" min="0" max="200" value="100" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400 disabled:cursor-not-allowed" disabled>
+                </div>
+                <div>
+                    <label for="saturation" class="block text-xs font-medium text-gray-300">Saturation: <span id="saturationValue">100</span>%</label>
+                    <input type="range" id="saturation" min="0" max="200" value="100" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400 disabled:cursor-not-allowed" disabled>
+                </div>
+                <div>
+                    <label for="grayscale" class="block text-xs font-medium text-gray-300">Grayscale: <span id="grayscaleValue">0</span>%</label>
+                    <input type="range" id="grayscale" min="0" max="100" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400 disabled:cursor-not-allowed" disabled>
+                </div>
+                 <button id="applyAdjustments" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled data-tooltip="Apply current filter adjustments">Apply Adjustments</button>
+                 <button id="resetAdjustments" class="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled data-tooltip="Reset all filter adjustments">Reset Adjustments</button>
+            </div>
+             <div class="space-y-2 pt-2 border-t border-gray-700">
+                <h4 class="text-sm font-medium text-gray-300">Text Overlay</h4>
+                <input type="text" id="textOverlayInput" placeholder="Enter text" class="w-full rounded-md text-sm p-2 disabled:cursor-not-allowed" disabled>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="color" id="textColorInput" value="#FFFFFF" class="w-full h-10 rounded-md disabled:cursor-not-allowed" disabled data-tooltip="Text color">
+                    <input type="number" id="textSizeInput" value="30" min="8" max="200" placeholder="Size" class="w-full rounded-md text-sm p-2 disabled:cursor-not-allowed" disabled data-tooltip="Text size (px)">
+                </div>
+                 <select id="textFontInput" class="w-full rounded-md text-sm p-2 disabled:cursor-not-allowed" disabled>
+                    <option value="Arial">Arial</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Comic Sans MS">Comic Sans MS</option>
+                </select>
+                <button id="addTextButton" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Add text to image (click canvas to place)">Add Text</button>
+            </div>
+        </div>
+
 
         <div id="tab-export" class="tab-content space-y-4">
             <div>
@@ -248,8 +359,7 @@
                 <label for="fileFormat" class="block text-sm font-medium text-gray-300">Format</label>
                 <select id="fileFormat" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2">
                     <option value="image/png">PNG</option>
-                    <option value="image/jpeg">JPG</option>
-                    <option value="image/webp">WEBP</option>
+                    <option value="image/jpeg" selected>JPG</option> <option value="image/webp">WEBP</option>
                 </select>
             </div>
             <div id="qualityContainer">
@@ -257,43 +367,51 @@
                 <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.9" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400">
             </div>
             <div>
-                <label for="targetFileSize" class="block text-sm font-medium text-gray-300">Target File Size (KB, optional)</label>
+                <label for="targetFileSize" class="block text-sm font-medium text-gray-300">Target File Size (KB, optional for JPG/WEBP)</label>
                 <input type="number" id="targetFileSize" placeholder="e.g., 500" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2">
             </div>
-            <button id="downloadActiveButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50" disabled>
+            <button id="downloadActiveButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Download the currently active edited image">
                 <i class="fas fa-download mr-2"></i>Download Active Image
             </button>
-            <button id="downloadAllButton" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md text-sm mt-2 disabled:opacity-50" disabled>
+            <button id="downloadAllButton" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md text-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Download all processed images as individual files">
                 <i class="fas fa-file-archive mr-2"></i>Download All Processed
             </button>
-            <div id="exportLoader" class="hidden mt-2">
+            <div id="exportLoader" class="hidden mt-2 items-center justify-center flex-col">
                 <div class="loader"></div>
                 <p class="text-sm text-center text-gray-400 mt-1">Processing...</p>
             </div>
             <p id="exportMessage" class="text-sm text-gray-400 mt-2"></p>
         </div>
         
-        <div class="flex-grow"></div>
+        <div class="flex-grow"></div> 
 
         <div>
             <div class="pt-4 border-t border-gray-700">
                 <h3 class="text-md font-semibold text-gray-300 mb-2">Active Image Info:</h3>
-                <p class="text-sm text-gray-400">Original: <span id="originalDimensions">N/A</span></p>
+                <p class="text-sm text-gray-400">Name: <span id="activeImageName">N/A</span></p>
+                <p class="text-sm text-gray-400">Original: <span id="originalDimensions">N/A</span> (<span id="originalFileSize">N/A</span>)</p>
                 <p class="text-sm text-gray-400">Current: <span id="currentDimensions">N/A</span></p>
             </div>
 
             <div class="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-400 text-left">
                 <p>Made by <a href="https://frandez.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-300">frandez.com</a></p>
-                <p class="mt-1">This exists because all other sites are greedy. Took me 10 minutes using AI</p>
+                <p class="mt-1">Rapidly developed with AI to bring you free tools!</p>
             </div>
         </div>
     </div>
 
-    <div id="canvasHost" class="flex-grow bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden"> <div class="canvas-container shadow-lg rounded-md bg-gray-700"> 
+    <div id="canvasHost" class="flex-grow bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden">
+        <div class="canvas-container shadow-lg rounded-md bg-gray-700"> 
             <canvas id="imageCanvas"></canvas>
         </div>
-         <div id="canvasMessage" class="absolute inset-0 flex items-center justify-center text-gray-400 text-lg bg-gray-800 bg-opacity-90">
+         <div id="canvasMessage" class="absolute inset-0 flex items-center justify-center text-gray-400 text-lg bg-gray-800 bg-opacity-90 pointer-events-none">
             <p>Upload image(s) to start editing.</p>
+        </div>
+        <div class="zoom-controls">
+            <button id="zoomOutBtn" data-tooltip="Zoom Out (-)"><i class="fas fa-search-minus"></i></button>
+            <span id="zoomLevelDisplay">100%</span>
+            <button id="zoomInBtn" data-tooltip="Zoom In (+)"><i class="fas fa-search-plus"></i></button>
+            <button id="zoomResetBtn" data-tooltip="Reset Zoom (100%)"><i class="fas fa-expand"></i></button>
         </div>
     </div>
 
@@ -305,6 +423,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // DOM Elements
         const imageUpload = document.getElementById('imageUpload');
+        const loadedFileNameEl = document.getElementById('loadedFileName');
         const imageSelectorContainer = document.getElementById('imageSelectorContainer');
         const imageSelectorList = document.getElementById('imageSelectorList');
         const imageCanvas = document.getElementById('imageCanvas');
@@ -312,13 +431,17 @@
         const canvasMessage = document.getElementById('canvasMessage');
         const notificationArea = document.getElementById('notificationArea');
 
+        const undoButton = document.getElementById('undoButton');
         const resetImageBtn = document.getElementById('resetImage');
+        const activeImageNameEl = document.getElementById('activeImageName');
         const originalDimensionsEl = document.getElementById('originalDimensions');
+        const originalFileSizeEl = document.getElementById('originalFileSize');
         const currentDimensionsEl = document.getElementById('currentDimensions');
 
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
 
+        // Resize Tab
         const resizePercent = document.getElementById('resizePercent');
         const resizePercentValue = document.getElementById('resizePercentValue');
         const resizeWidthInput = document.getElementById('resizeWidth'); 
@@ -326,6 +449,7 @@
         const aspectLock = document.getElementById('aspectLock');
         const applyResizeBtn = document.getElementById('applyResize');
 
+        // Crop Tab
         const aspectRatioSelect = document.getElementById('aspectRatio');
         const cropWidthEl = document.getElementById('cropWidth');
         const cropHeightEl = document.getElementById('cropHeight');
@@ -333,6 +457,29 @@
         const applyCropBtn = document.getElementById('applyCrop');
         const cancelCropBtn = document.getElementById('cancelCrop');
 
+        // Adjust Tab
+        const rotateLeftBtn = document.getElementById('rotateLeft');
+        const rotateRightBtn = document.getElementById('rotateRight');
+        const flipHorizontalBtn = document.getElementById('flipHorizontal');
+        const flipVerticalBtn = document.getElementById('flipVertical');
+        const brightnessSlider = document.getElementById('brightness');
+        const brightnessValue = document.getElementById('brightnessValue');
+        const contrastSlider = document.getElementById('contrast');
+        const contrastValue = document.getElementById('contrastValue');
+        const saturationSlider = document.getElementById('saturation');
+        const saturationValue = document.getElementById('saturationValue');
+        const grayscaleSlider = document.getElementById('grayscale');
+        const grayscaleValue = document.getElementById('grayscaleValue');
+        const applyAdjustmentsBtn = document.getElementById('applyAdjustments');
+        const resetAdjustmentsBtn = document.getElementById('resetAdjustments');
+        const textOverlayInput = document.getElementById('textOverlayInput');
+        const textColorInput = document.getElementById('textColorInput');
+        const textSizeInput = document.getElementById('textSizeInput');
+        const textFontInput = document.getElementById('textFontInput');
+        const addTextButton = document.getElementById('addTextButton');
+
+
+        // Export Tab
         const fileNameInput = document.getElementById('fileName');
         const fileFormatSelect = document.getElementById('fileFormat');
         const qualityContainer = document.getElementById('qualityContainer');
@@ -343,9 +490,18 @@
         const downloadAllButton = document.getElementById('downloadAllButton');
         const exportLoader = document.getElementById('exportLoader');
         const exportMessage = document.getElementById('exportMessage');
+
+        // Zoom Controls
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const zoomResetBtn = document.getElementById('zoomResetBtn');
+        const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
         
-        let imageStore = []; 
+        // State Variables
+        let imageStore = []; // Stores { id, original: Image, current: Image, history: [Image.src], historyPointer: -1, name, ext, originalFileSizeBytes }
         let activeImageIndex = -1; 
+        let currentZoomLevel = 1.0;
+        const ZOOM_STEP = 0.1;
 
         let isCropping = false;
         let cropRect = { x: 0, y: 0, width: 0, height: 0, visualX: 0, visualY: 0, visualWidth: 0, visualHeight: 0 };
@@ -354,18 +510,23 @@
         let cropGridLines = [];
         let dragInfo = { active: false, target: null, startX: 0, startY: 0, originalRect: {} };
 
+        let isAddingText = false;
+        let tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
+
+
+        // Initialization
         disableAllControls(); 
         setupTabs(); 
+        updateQualityVisibility(); // Call this on load to set initial visibility based on default format
 
+        // --- Utility Functions ---
         function showNotification(message, type = 'success', duration = 3000) {
             const notification = document.createElement('div');
             notification.className = `notification ${type} text-white`;
             notification.textContent = message;
             notificationArea.appendChild(notification);
-
             void notification.offsetWidth; 
             notification.classList.add('show');
-
             setTimeout(() => {
                 notification.classList.remove('show');
                 notification.classList.add('fade-out');
@@ -377,6 +538,78 @@
             }, duration);
         }
 
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function dataURLtoBlob(dataurl) { return fetch(dataurl).then(res => res.blob()); }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout); timeout = setTimeout(later, wait);
+            };
+        }
+
+        // --- History Management ---
+        function saveState(operationName = "Unknown operation") {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+            
+            // Clear future history if we are not at the latest state
+            if (activeImgData.historyPointer < activeImgData.history.length - 1) {
+                activeImgData.history = activeImgData.history.slice(0, activeImgData.historyPointer + 1);
+            }
+
+            const currentStateSrc = activeImgData.current.src;
+            // Avoid saving duplicate states
+            if (activeImgData.history.length > 0 && activeImgData.history[activeImgData.history.length - 1] === currentStateSrc) {
+                return;
+            }
+
+            activeImgData.history.push(currentStateSrc);
+            activeImgData.historyPointer = activeImgData.history.length - 1;
+            undoButton.disabled = activeImgData.historyPointer <= 0;
+            // console.log(`State saved after ${operationName}. Pointer: ${activeImgData.historyPointer}, History size: ${activeImgData.history.length}`);
+        }
+
+        undoButton.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+
+            if (activeImgData.historyPointer > 0) {
+                activeImgData.historyPointer--;
+                const previousStateSrc = activeImgData.history[activeImgData.historyPointer];
+                const img = new Image();
+                img.onload = () => {
+                    activeImgData.current = img;
+                    setActiveImage(activeImageIndex, false); // Don't save state on undo
+                    showNotification('Undo successful.', 'success', 1500);
+                };
+                img.onerror = () => showNotification('Error loading previous state.', 'error');
+                img.src = previousStateSrc;
+                undoButton.disabled = activeImgData.historyPointer <= 0;
+            }
+        });
+        
+        // Keyboard shortcut for Undo
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                if (!undoButton.disabled) {
+                    e.preventDefault();
+                    undoButton.click();
+                }
+            }
+        });
+
+
+        // --- Tab Management ---
         function setupTabs() {
             const activeClasses = ['bg-blue-500', 'text-white']; 
             const inactiveClasses = ['text-gray-400', 'hover:text-gray-200', 'hover:bg-gray-700'];
@@ -404,40 +637,72 @@
                     if (button.dataset.tab !== 'crop' && isCropping) {
                         cancelCropMode();
                     }
+                    if (button.dataset.tab !== 'adjust' && isAddingText) {
+                        cancelAddTextMode();
+                    }
+                     // Reset temp filters when leaving adjust tab without applying
+                    if (button.dataset.tab !== 'adjust') {
+                        resetTempAdjustmentFilters(false); // Don't redraw if not on adjust tab
+                    } else {
+                        // When entering adjust tab, ensure sliders reflect current image state (or temp if already fiddling)
+                        if (activeImageIndex !== -1) {
+                            // This will draw with temp filters, which is fine.
+                           // drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+                        }
+                    }
                 });
             });
         }
 
+        // --- Control Disabling/Enabling ---
         function disableAllControls() { 
-            applyResizeBtn.disabled = true;
-            startCropBtn.disabled = true;
-            applyCropBtn.disabled = true;
-            cancelCropBtn.disabled = true;
-            downloadActiveButton.disabled = true;
-            downloadAllButton.disabled = true;
-            resetImageBtn.disabled = true;
-            aspectRatioSelect.disabled = true; 
-            [resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, fileFormatSelect, qualitySlider, targetFileSizeInput].forEach(el => el.disabled = true);
+            const buttonsToDisable = [
+                applyResizeBtn, startCropBtn, applyCropBtn, cancelCropBtn, downloadActiveButton, 
+                downloadAllButton, resetImageBtn, undoButton, rotateLeftBtn, rotateRightBtn,
+                flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn, addTextButton
+            ];
+            const inputsToDisable = [
+                resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, 
+                fileFormatSelect, qualitySlider, targetFileSizeInput, aspectRatioSelect,
+                brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider,
+                textOverlayInput, textColorInput, textSizeInput, textFontInput
+            ];
+
+            buttonsToDisable.forEach(el => el.disabled = true);
+            inputsToDisable.forEach(el => el.disabled = true);
         }
 
         function enableAllControls() { 
-            if (activeImageIndex === -1) return; 
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
+            const activeImgData = imageStore[activeImageIndex];
             
-            applyResizeBtn.disabled = false;
-            downloadActiveButton.disabled = false;
-            downloadAllButton.disabled = imageStore.length === 0; 
-            resetImageBtn.disabled = false; 
+            const buttonsToEnable = [
+                applyResizeBtn, downloadActiveButton, resetImageBtn, rotateLeftBtn, rotateRightBtn,
+                flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn, addTextButton
+            ];
+            const inputsToEnable = [
+                resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, 
+                fileFormatSelect, qualitySlider, targetFileSizeInput, aspectRatioSelect,
+                brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider,
+                textOverlayInput, textColorInput, textSizeInput, textFontInput
+            ];
+
+            buttonsToEnable.forEach(el => el.disabled = false);
+            inputsToEnable.forEach(el => el.disabled = false);
+
             startCropBtn.disabled = false; 
-            aspectRatioSelect.disabled = false; 
-            [resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, fileFormatSelect, qualitySlider, targetFileSizeInput].forEach(el => el.disabled = false);
+            downloadAllButton.disabled = imageStore.length === 0; 
+            undoButton.disabled = activeImgData.historyPointer <= 0;
         }
         
+        // --- Image Loading and Management ---
         imageUpload.addEventListener('change', async (event) => {
             const files = event.target.files;
             if (!files || files.length === 0) {
                 disableAllControls();
                 imageSelectorContainer.classList.add('hidden');
                 imageSelectorList.innerHTML = '';
+                loadedFileNameEl.textContent = '';
                 imageStore = [];
                 activeImageIndex = -1;
                 drawImageToCanvas(null); 
@@ -447,7 +712,7 @@
 
             imageStore = [];
             imageSelectorList.innerHTML = ''; 
-            canvasMessage.innerHTML = '<p>Loading images...</p>';
+            canvasMessage.innerHTML = '<div class="loader"></div><p class="mt-2">Loading images...</p>';
             canvasMessage.classList.remove('hidden');
             ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
             disableAllControls(); 
@@ -462,12 +727,16 @@
                         originalImg.onload = () => {
                             const currentImg = new Image(); 
                             currentImg.onload = () => {
+                                const initialStateSrc = currentImg.src; // Save initial state for history
                                 resolve({ 
                                     id: `img-${Date.now()}-${i}`, 
                                     original: originalImg, 
                                     current: currentImg, 
+                                    history: [initialStateSrc], // Initialize history with the first state
+                                    historyPointer: 0,         // Pointer to the current state in history
                                     name: file.name.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_'),
-                                    ext: file.name.split('.').pop().toLowerCase()
+                                    ext: file.name.split('.').pop().toLowerCase(),
+                                    originalFileSizeBytes: file.size
                                 });
                             };
                             currentImg.onerror = () => reject(new Error(`Failed to load current state for ${file.name}`));
@@ -486,7 +755,8 @@
                 imageStore = await Promise.all(loadPromises);
                 populateImageSelector();
                 if (imageStore.length > 0) {
-                    setActiveImage(0); 
+                    setActiveImage(0, false); // Don't save state on initial load
+                    loadedFileNameEl.textContent = files.length > 1 ? `${files.length} files loaded` : files[0].name;
                 } else {
                     canvasMessage.innerHTML = '<p>Upload image(s) to start editing.</p>';
                     activeImageIndex = -1;
@@ -501,11 +771,11 @@
 
         function populateImageSelector() {
             imageSelectorList.innerHTML = '';
-            if (imageStore.length > 0) { 
+            if (imageStore.length > 1) { // Only show selector if more than one image
                 imageStore.forEach((imgData, index) => {
                     const button = document.createElement('button');
                     button.textContent = `${imgData.name}.${imgData.ext}`;
-                    button.onclick = () => setActiveImage(index);
+                    button.onclick = () => setActiveImage(index, false); // Don't save state on switch
                     imageSelectorList.appendChild(button);
                 });
                 imageSelectorContainer.classList.remove('hidden');
@@ -514,67 +784,144 @@
             }
         }
 
-        function setActiveImage(index) {
+        function setActiveImage(index, shouldSaveState = true) {
             if (index < 0 || index >= imageStore.length) return;
+            
+            if (isCropping) cancelCropMode(); 
+            if (isAddingText) cancelAddTextMode();
+
             activeImageIndex = index;
 
             Array.from(imageSelectorList.children).forEach((btn, i) => {
                 btn.classList.toggle('active-image', i === activeImageIndex);
             });
             
-            if (isCropping) cancelCropMode(); 
-
             const activeImgData = imageStore[activeImageIndex];
-            drawImageToCanvas(activeImgData.current); 
+            if (imageStore.length === 1) { // If only one image, update loadedFileNameEl
+                 loadedFileNameEl.textContent = `${activeImgData.name}.${activeImgData.ext}`;
+            }
+
+            resetTempAdjustmentFilters(false); // Reset temp filters, don't redraw yet
+            drawImageToCanvasWithFilters(activeImgData.current, tempFilters); // Draw with (now reset) temp filters
             updateDimensionDisplaysForActive();
             resetResizeControlsForActive();
+            resetAdjustmentControls(); // Reset sliders to current image's (or default) state
             fileNameInput.value = `${activeImgData.name}_edited`; 
             enableAllControls(); 
             canvasMessage.classList.add('hidden');
+            currentZoomLevel = 1.0; // Reset zoom on image switch
+            applyZoom();
+
+            if (shouldSaveState) {
+                // This is tricky. Switching images shouldn't necessarily be a "state save"
+                // unless an operation was just performed. For now, let operations handle saveState.
+            }
+            undoButton.disabled = activeImgData.historyPointer <= 0;
         }
         
-        function drawImageToCanvas(imageToDraw) {
+        // --- Canvas Drawing ---
+        function drawImageToCanvas(imageToDraw, zoom = currentZoomLevel, filters = null) {
             if (!imageToDraw) {
                 ctx.clearRect(0,0,imageCanvas.width, imageCanvas.height);
                 canvasMessage.classList.remove('hidden');
                 canvasMessage.innerHTML = '<p>No image selected or loaded.</p>';
+                imageCanvas.style.transform = `scale(1)`;
                 return;
             }
             canvasMessage.classList.add('hidden');
-            const localCanvasContainer = document.querySelector('.canvas-container'); // Fetch locally
+            const localCanvasContainer = document.querySelector('.canvas-container'); 
             if (!localCanvasContainer) { console.error("drawImageToCanvas: .canvas-container not found!"); return; }
 
             const containerWidth = localCanvasContainer.clientWidth;
             const containerHeight = localCanvasContainer.clientHeight;
-            let drawWidth = imageToDraw.width;
-            let drawHeight = imageToDraw.height;
-            const imageAspectRatio = imageToDraw.width / imageToDraw.height;
             
+            let baseDrawWidth = imageToDraw.width;
+            let baseDrawHeight = imageToDraw.height;
+            const imageAspectRatio = baseDrawWidth / baseDrawHeight;
+            
+            // Calculate dimensions to fit within container (pre-zoom)
+            let displayWidth, displayHeight;
             if (containerWidth / containerHeight > imageAspectRatio) {
-                drawHeight = containerHeight;
-                drawWidth = drawHeight * imageAspectRatio;
+                displayHeight = containerHeight;
+                displayWidth = displayHeight * imageAspectRatio;
             } else {
-                drawWidth = containerWidth;
-                drawHeight = drawWidth / imageAspectRatio;
+                displayWidth = containerWidth;
+                displayHeight = displayWidth / imageAspectRatio;
             }
             
-            imageCanvas.width = Math.round(drawWidth);
-            imageCanvas.height = Math.round(drawHeight);
+            imageCanvas.width = Math.round(baseDrawWidth); // Canvas internal resolution
+            imageCanvas.height = Math.round(baseDrawHeight);
+
+            // Apply CSS transform for zoom to the canvas element itself
+            imageCanvas.style.width = `${Math.round(displayWidth)}px`;
+            imageCanvas.style.height = `${Math.round(displayHeight)}px`;
+            imageCanvas.style.transformOrigin = 'center center'; // Zoom from center
+            imageCanvas.style.transform = `scale(${zoom})`;
+
+
             ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+
+            // Apply filters if any
+            let filterString = '';
+            if (filters) {
+                if (filters.brightness !== 100) filterString += `brightness(${filters.brightness}%) `;
+                if (filters.contrast !== 100) filterString += `contrast(${filters.contrast}%) `;
+                if (filters.saturation !== 100) filterString += `saturate(${filters.saturation}%) `;
+                if (filters.grayscale !== 0) filterString += `grayscale(${filters.grayscale}%) `;
+            }
+            ctx.filter = filterString.trim();
             ctx.drawImage(imageToDraw, 0, 0, imageCanvas.width, imageCanvas.height);
+            ctx.filter = 'none'; // Reset filter for other canvas operations
+        }
+
+        function drawImageToCanvasWithFilters(imageToDraw, filtersToApply) {
+            drawImageToCanvas(imageToDraw, currentZoomLevel, filtersToApply);
         }
         
         function updateDimensionDisplaysForActive() {
             if (activeImageIndex !== -1 && imageStore[activeImageIndex]) {
                 const activeImgData = imageStore[activeImageIndex];
+                activeImageNameEl.textContent = `${activeImgData.name}.${activeImgData.ext}`;
                 originalDimensionsEl.textContent = `${activeImgData.original.width} x ${activeImgData.original.height} px`;
+                originalFileSizeEl.textContent = formatBytes(activeImgData.originalFileSizeBytes);
                 currentDimensionsEl.textContent = `${Math.round(activeImgData.current.width)} x ${Math.round(activeImgData.current.height)} px`;
             } else {
+                activeImageNameEl.textContent = 'N/A';
                 originalDimensionsEl.textContent = 'N/A';
+                originalFileSizeEl.textContent = 'N/A';
                 currentDimensionsEl.textContent = 'N/A';
             }
         }
 
+        // --- Zoom Functionality ---
+        zoomInBtn.addEventListener('click', () => {
+            currentZoomLevel = Math.min(3.0, currentZoomLevel + ZOOM_STEP); // Max zoom 300%
+            applyZoom();
+        });
+        zoomOutBtn.addEventListener('click', () => {
+            currentZoomLevel = Math.max(0.1, currentZoomLevel - ZOOM_STEP); // Min zoom 10%
+            applyZoom();
+        });
+        zoomResetBtn.addEventListener('click', () => {
+            currentZoomLevel = 1.0;
+            applyZoom();
+        });
+
+        function applyZoom() {
+            if (activeImageIndex !== -1 && imageStore[activeImageIndex]) {
+                drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+            }
+            zoomLevelDisplay.textContent = `${Math.round(currentZoomLevel * 100)}%`;
+            // If cropping, need to readjust visual crop selection
+            if (isCropping && cropSelectionDiv) {
+                // This is complex, as cropRect is relative to unzoomed canvas.
+                // For simplicity, might need to cancel crop on zoom or re-init.
+                // For now, just redraw. User might need to readjust crop.
+                updateCropSelectionVisuals();
+            }
+        }
+        
+        // --- Reset Active Image ---
         resetImageBtn.addEventListener('click', () => {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             
@@ -582,12 +929,17 @@
             const newCurrentImage = new Image();
             newCurrentImage.onload = () => {
                 activeImgData.current = newCurrentImage; 
-                setActiveImage(activeImageIndex); 
+                activeImgData.history = [newCurrentImage.src]; // Reset history
+                activeImgData.historyPointer = 0;
+                setActiveImage(activeImageIndex, false); // Don't save state on reset
+                resetTempAdjustmentFilters(); // Also reset any live filter previews
                 showNotification(`"${activeImgData.name}.${activeImgData.ext}" reset to original.`);
             };
+            newCurrentImage.onerror = () => showNotification('Error loading original image for reset.', 'error');
             newCurrentImage.src = activeImgData.original.src; 
         });
 
+        // --- Resize Functionality ---
         function resetResizeControlsForActive() {
             resizePercent.value = 100;
             resizePercentValue.textContent = '100';
@@ -609,63 +961,82 @@
             
             const newWidth = Math.round(activeImg.width * (percent / 100));
             const newHeight = Math.round(activeImg.height * (percent / 100));
-            resizeWidthInput.value = newWidth; 
-            resizeHeightInput.value = newHeight;
+            resizeWidthInput.value = newWidth > 0 ? newWidth : 1; 
+            resizeHeightInput.value = newHeight > 0 ? newHeight : 1;
         });
 
         resizeWidthInput.addEventListener('input', () => {
-            if (activeImageIndex === -1 || !aspectLock.checked) return;
+            if (activeImageIndex === -1) return;
             const newWidth = parseInt(resizeWidthInput.value);
             if (isNaN(newWidth) || newWidth <=0) return;
-            const activeImg = imageStore[activeImageIndex].current;
-            const currentAspectRatio = activeImg.width / activeImg.height;
-            resizeHeightInput.value = Math.round(newWidth / currentAspectRatio);
+
+            if (aspectLock.checked) {
+                const activeImg = imageStore[activeImageIndex].current;
+                const currentAspectRatio = activeImg.width / activeImg.height;
+                resizeHeightInput.value = Math.max(1, Math.round(newWidth / currentAspectRatio));
+            }
             updatePercentSliderFromDimensions(newWidth, parseInt(resizeHeightInput.value));
         });
 
         resizeHeightInput.addEventListener('input', () => {
-            if (activeImageIndex === -1 || !aspectLock.checked) return;
+            if (activeImageIndex === -1) return;
             const newHeight = parseInt(resizeHeightInput.value);
             if (isNaN(newHeight) || newHeight <=0) return;
-            const activeImg = imageStore[activeImageIndex].current;
-            const currentAspectRatio = activeImg.width / activeImg.height;
-            resizeWidthInput.value = Math.round(newHeight * currentAspectRatio);
+
+            if (aspectLock.checked) {
+                const activeImg = imageStore[activeImageIndex].current;
+                const currentAspectRatio = activeImg.width / activeImg.height;
+                resizeWidthInput.value = Math.max(1, Math.round(newHeight * currentAspectRatio));
+            }
             updatePercentSliderFromDimensions(parseInt(resizeWidthInput.value), newHeight);
         });
         
         function updatePercentSliderFromDimensions(w, h) {
-            if (activeImageIndex === -1) return;
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImg = imageStore[activeImageIndex].current;
+            if (activeImg.width === 0 || activeImg.height === 0) return; // Avoid division by zero
             const percentW = (w / activeImg.width) * 100;
             const percentH = (h / activeImg.height) * 100;
-            const avgPercent = Math.round((percentW + percentH) / 2);
-            resizePercent.value = avgPercent > 0 ? avgPercent : 1;
+            // If aspect lock is on, percentW and percentH should be very close.
+            // If not, it's harder to define a single "percent". Let's use width's percent.
+            const representativePercent = aspectLock.checked ? Math.round((percentW + percentH) / 2) : Math.round(percentW);
+            resizePercent.value = representativePercent > 0 ? representativePercent : 1;
             resizePercentValue.textContent = resizePercent.value;
         }
 
         applyResizeBtn.addEventListener('click', async () => {
             if (activeImageIndex === -1) return;
-            applyResizeBtn.disabled = true;
+            applyResizeBtn.disabled = true; // Prevent double clicks
 
             const activeImgData = imageStore[activeImageIndex];
             let newW, newH;
             const originalCurrentWidth = activeImgData.current.width;
             const originalCurrentHeight = activeImgData.current.height;
 
-            if (resizePercent.value !== '100' && 
-                (parseInt(resizeWidthInput.value) === originalCurrentWidth && parseInt(resizeHeightInput.value) === originalCurrentHeight) ) { 
-                const targetPercent = parseInt(resizePercent.value) / 100;
+            // Prioritize percent slider if it was the last thing changed and dimensions match original current
+            const currentPercentVal = parseInt(resizePercent.value);
+            const currentWVal = parseInt(resizeWidthInput.value);
+            const currentHVal = parseInt(resizeHeightInput.value);
+
+            if (currentPercentVal !== 100 && currentWVal === originalCurrentWidth && currentHVal === originalCurrentHeight) {
+                const targetPercent = currentPercentVal / 100;
                 newW = Math.round(originalCurrentWidth * targetPercent);
                 newH = Math.round(originalCurrentHeight * targetPercent);
             } else { 
-                newW = parseInt(resizeWidthInput.value);
-                newH = parseInt(resizeHeightInput.value);
+                newW = currentWVal;
+                newH = currentHVal;
                 if (aspectLock.checked) {
                     const currentAspectRatio = originalCurrentWidth / originalCurrentHeight;
-                    if (newW !== originalCurrentWidth && resizeWidthInput.value !== String(originalCurrentWidth)) {
+                    // Check which input was likely changed by user if aspect lock is on
+                    if (newW !== originalCurrentWidth && resizeWidthInput.value !== String(originalCurrentWidth)) { // Width was changed
                         newH = Math.round(newW / currentAspectRatio);
-                    } else if (newH !== originalCurrentHeight && resizeHeightInput.value !== String(originalCurrentHeight)) {
+                    } else if (newH !== originalCurrentHeight && resizeHeightInput.value !== String(originalCurrentHeight)) { // Height was changed
                         newW = Math.round(newH * currentAspectRatio);
+                    }
+                    // If both are different, it implies percent slider or both were manually set,
+                    // but aspect lock should enforce ratio based on one. Let's assume width is primary if both changed.
+                    else if (newW !== originalCurrentWidth && newH !== originalCurrentHeight) {
+                         newH = Math.round(newW / currentAspectRatio);
                     }
                 }
             }
@@ -683,18 +1054,21 @@
                 const newResizedImage = new Image();
                 newResizedImage.onload = () => {
                     activeImgData.current = newResizedImage; 
+                    saveState("Resize");
                     setActiveImage(activeImageIndex); 
                     showNotification(`"${activeImgData.name}.${activeImgData.ext}" resized successfully!`);
                 };
+                newResizedImage.onerror = () => showNotification('Error creating resized image data.', 'error');
                 newResizedImage.src = tempCanvas.toDataURL();
             } catch (error) {
                 console.error("Error resizing image:", error);
                 showNotification(`Error resizing: ${error.message}`, 'error');
             } finally {
-                applyResizeBtn.disabled = false;
+                if (activeImageIndex !== -1) applyResizeBtn.disabled = false; // Re-enable if an image is still active
             }
         });
 
+        // --- Crop Functionality (largely from user's existing code, with minor adjustments) ---
         startCropBtn.addEventListener('click', () => {
             if (activeImageIndex === -1) {
                 showNotification("Please select an image to crop.", "warning");
@@ -722,19 +1096,22 @@
         }
 
         function initializeCropSelection() {
-            if (activeImageIndex === -1) {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) {
                 console.warn("initializeCropSelection called with no active image.");
                 return;
             }
-            const localCanvasHost = document.getElementById('canvasHost'); // Fetch locally
+            const localCanvasHost = document.getElementById('canvasHost'); 
             if (!localCanvasHost) {
-                console.error("CRITICAL: canvasHost is null in initializeCropSelection! Element with ID 'canvasHost' not found.");
+                console.error("CRITICAL: canvasHost is null in initializeCropSelection!");
                 showNotification("Error: Canvas area not found. Cannot initialize crop.", "error");
                 isCropping = false; startCropBtn.disabled = (activeImageIndex === -1);
                 return;
             }
-            if (imageCanvas.width === 0 || imageCanvas.height === 0) {
-                console.warn("Crop init: Image canvas has no dimensions. Aborting crop initialization.");
+            const displayedCanvasWidth = imageCanvas.clientWidth; // Use clientWidth for visual size
+            const displayedCanvasHeight = imageCanvas.clientHeight;
+
+            if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) {
+                console.warn("Crop init: Image canvas has no visual dimensions. Aborting crop initialization.");
                 showNotification("Please ensure an image is fully displayed before cropping.", "warning");
                 isCropping = false; startCropBtn.disabled = (activeImageIndex === -1);
                 return;
@@ -744,12 +1121,14 @@
             cropSelectionDiv = document.createElement('div');
             cropSelectionDiv.className = 'crop-selection';
             
-            localCanvasHost.appendChild(cropSelectionDiv);
+            localCanvasHost.appendChild(cropSelectionDiv); // Append to canvasHost for positioning relative to it
 
-            const initialWidth = imageCanvas.width * 0.8;
-            const initialHeight = imageCanvas.height * 0.8;
-            const initialX = (imageCanvas.width - initialWidth) / 2;
-            const initialY = (imageCanvas.height - initialHeight) / 2;
+            const initialWidth = displayedCanvasWidth * 0.8;
+            const initialHeight = displayedCanvasHeight * 0.8;
+            const initialX = (displayedCanvasWidth - initialWidth) / 2;
+            const initialY = (displayedCanvasHeight - initialHeight) / 2;
+            
+            // cropRect stores dimensions relative to the *displayed* canvas, not the host
             cropRect = { x: initialX, y: initialY, width: initialWidth, height: initialHeight };
             updateCropSelectionVisuals(); 
             
@@ -778,23 +1157,24 @@
 
         function updateCropSelectionVisuals() {
             if (!cropSelectionDiv || !isCropping || activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
-            const localCanvasHost = document.getElementById('canvasHost'); // Fetch locally
-            if (!localCanvasHost) { console.error("updateCropSelectionVisuals: canvasHost not found!"); return; }
-
             const activeImgData = imageStore[activeImageIndex];
-            const canvasBoundingRect = imageCanvas.getBoundingClientRect(); 
-            const hostBoundingRect = localCanvasHost.getBoundingClientRect(); 
-            cropRect.visualX = canvasBoundingRect.left - hostBoundingRect.left + cropRect.x;
-            cropRect.visualY = canvasBoundingRect.top - hostBoundingRect.top + cropRect.y;
-            cropRect.visualWidth = cropRect.width;
-            cropRect.visualHeight = cropRect.height;
-            cropSelectionDiv.style.left = `${cropRect.visualX}px`;
-            cropSelectionDiv.style.top = `${cropRect.visualY}px`;
-            cropSelectionDiv.style.width = `${cropRect.visualWidth}px`;
-            cropSelectionDiv.style.height = `${cropRect.visualHeight}px`;
+            
+            // Get canvas position relative to its offsetParent (canvasHost)
+            const canvasOffsetX = imageCanvas.offsetLeft;
+            const canvasOffsetY = imageCanvas.offsetTop;
 
-            const scaleFactorX = imageCanvas.width > 0 ? activeImgData.current.width / imageCanvas.width : 1;
-            const scaleFactorY = imageCanvas.height > 0 ? activeImgData.current.height / imageCanvas.height : 1;
+            // Position crop selection div relative to canvasHost, but aligned with the displayed canvas
+            cropSelectionDiv.style.left = `${canvasOffsetX + cropRect.x}px`;
+            cropSelectionDiv.style.top = `${canvasOffsetY + cropRect.y}px`;
+            cropSelectionDiv.style.width = `${cropRect.width}px`;
+            cropSelectionDiv.style.height = `${cropRect.height}px`;
+
+            // Calculate actual crop dimensions based on original image resolution
+            const displayedCanvasWidth = imageCanvas.clientWidth;
+            const displayedCanvasHeight = imageCanvas.clientHeight;
+            const scaleFactorX = displayedCanvasWidth > 0 ? activeImgData.current.width / displayedCanvasWidth : 1;
+            const scaleFactorY = displayedCanvasHeight > 0 ? activeImgData.current.height / displayedCanvasHeight : 1;
+            
             cropWidthEl.value = Math.round(cropRect.width * scaleFactorX); 
             cropHeightEl.value = Math.round(cropRect.height * scaleFactorY);
             
@@ -826,69 +1206,95 @@
         }
         
         aspectRatioSelect.addEventListener('change', () => {
-            if (!isCropping || !cropSelectionDiv || activeImageIndex === -1) return;
-            const activeImgData = imageStore[activeImageIndex];
+            if (!isCropping || !cropSelectionDiv || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex].current; // Use current image for aspect ratio
             const selectedRatio = aspectRatioSelect.value;
             if (selectedRatio === 'freeform') return;
+
+            const displayedCanvasWidth = imageCanvas.clientWidth;
+            const displayedCanvasHeight = imageCanvas.clientHeight;
+
             let ratio;
             if (selectedRatio === 'original') {
-                ratio = activeImgData.current.width / activeImgData.current.height; 
+                ratio = activeImgData.width / activeImgData.height; 
             } else {
                 const parts = selectedRatio.split(':').map(Number);
                 ratio = parts[0] / parts[1];
             }
-            const currentVisualWidth = cropRect.width; 
-            let newVisualHeight = currentVisualWidth / ratio;
-            if (cropRect.y + newVisualHeight > imageCanvas.height) { 
-                newVisualHeight = imageCanvas.height - cropRect.y;
-                cropRect.width = newVisualHeight * ratio; 
-            } else {
-                 cropRect.height = newVisualHeight; 
+            
+            let newVisualWidth = cropRect.width; 
+            let newVisualHeight = newVisualWidth / ratio;
+
+            // Adjust if new height exceeds canvas bounds
+            if (cropRect.y + newVisualHeight > displayedCanvasHeight) { 
+                newVisualHeight = displayedCanvasHeight - cropRect.y;
+                newVisualWidth = newVisualHeight * ratio; 
             }
-            cropRect.width = Math.min(cropRect.width, imageCanvas.width - cropRect.x);
-            cropRect.height = Math.min(cropRect.height, imageCanvas.height - cropRect.y);
+            // Adjust if new width exceeds canvas bounds (can happen after height adjustment)
+            if (cropRect.x + newVisualWidth > displayedCanvasWidth) {
+                newVisualWidth = displayedCanvasWidth - cropRect.x;
+                newVisualHeight = newVisualWidth / ratio;
+            }
+            
+            cropRect.width = Math.max(20, newVisualWidth); // Min size
+            cropRect.height = Math.max(20, newVisualHeight); // Min size
             updateCropSelectionVisuals();
         });
 
         function onCropMouseDown(e) {
             if (!isCropping) return;
-            const localCanvasHost = document.getElementById('canvasHost'); // Fetch locally
+            const localCanvasHost = document.getElementById('canvasHost'); 
             if (!localCanvasHost) { console.error("onCropMouseDown: canvasHost not found!"); return; }
 
             e.preventDefault(); e.stopPropagation();
             dragInfo.active = true;
             dragInfo.target = e.target.classList.contains('crop-handle') ? e.target.dataset.type : 'selection';
+            
             const hostBoundingRect = localCanvasHost.getBoundingClientRect();
+            // Mouse position relative to canvasHost
             dragInfo.startX = e.clientX - hostBoundingRect.left;
             dragInfo.startY = e.clientY - hostBoundingRect.top;
-            dragInfo.originalRect = { ...cropRect };
+            
+            // Store original cropRect values (which are relative to the displayed canvas, not canvasHost)
+            dragInfo.originalRect = { ...cropRect }; 
         }
 
         function onCropMouseMove(e) {
-            if (!isCropping || !dragInfo.active || activeImageIndex === -1) return;
-            const localCanvasHost = document.getElementById('canvasHost'); // Fetch locally
+            if (!isCropping || !dragInfo.active || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+            const localCanvasHost = document.getElementById('canvasHost');
             if (!localCanvasHost) { console.error("onCropMouseMove: canvasHost not found!"); return; }
 
-            const activeImgData = imageStore[activeImageIndex];
             e.preventDefault(); e.stopPropagation();
+            
             const hostBoundingRect = localCanvasHost.getBoundingClientRect();
-            const mouseX = e.clientX - hostBoundingRect.left;
-            const mouseY = e.clientY - hostBoundingRect.top;
-            const deltaX = mouseX - dragInfo.startX;
-            const deltaY = mouseY - dragInfo.startY;
+            const canvasBoundingRect = imageCanvas.getBoundingClientRect(); // For boundary checks
+
+            // Current mouse position relative to canvasHost
+            const mouseXOnHost = e.clientX - hostBoundingRect.left;
+            const mouseYOnHost = e.clientY - hostBoundingRect.top;
+
+            // Delta mouse movement relative to canvasHost
+            const deltaX = mouseXOnHost - dragInfo.startX;
+            const deltaY = mouseYOnHost - dragInfo.startY;
+            
             let newX = dragInfo.originalRect.x;
             let newY = dragInfo.originalRect.y;
             let newWidth = dragInfo.originalRect.width;
             let newHeight = dragInfo.originalRect.height;
             const minSize = 20; 
+
+            // All calculations for newX, newY, newWidth, newHeight are relative to the *displayed canvas*
             if (dragInfo.target === 'selection') {
                 newX = dragInfo.originalRect.x + deltaX;
                 newY = dragInfo.originalRect.y + deltaY;
             } else { 
+                // Handle resize from edges/corners
                 if (dragInfo.target.includes('w')) { newX = dragInfo.originalRect.x + deltaX; newWidth = dragInfo.originalRect.width - deltaX; }
                 if (dragInfo.target.includes('e')) { newWidth = dragInfo.originalRect.width + deltaX; }
                 if (dragInfo.target.includes('n')) { newY = dragInfo.originalRect.y + deltaY; newHeight = dragInfo.originalRect.height - deltaY; }
                 if (dragInfo.target.includes('s')) { newHeight = dragInfo.originalRect.height + deltaY; }
+                
                 const selectedRatioOption = aspectRatioSelect.value;
                 if (selectedRatioOption !== 'freeform') {
                     let targetAspectRatio;
@@ -898,29 +1304,46 @@
                         const parts = selectedRatioOption.split(':').map(Number);
                         targetAspectRatio = parts[0] / parts[1];
                     }
+
                     if (dragInfo.target.includes('w') || dragInfo.target.includes('e')) { 
                         const adjustedHeight = newWidth / targetAspectRatio;
-                        if (dragInfo.target.includes('n')) newY += newHeight - adjustedHeight; 
+                        if (dragInfo.target.includes('n')) newY += newHeight - adjustedHeight; // Adjust Y if resizing from top-corner
                         newHeight = adjustedHeight;
                     } else if (dragInfo.target.includes('n') || dragInfo.target.includes('s')) { 
                         const adjustedWidth = newHeight * targetAspectRatio;
-                         if (dragInfo.target.includes('w')) newX += newWidth - adjustedWidth; 
+                         if (dragInfo.target.includes('w')) newX += newWidth - adjustedWidth; // Adjust X if resizing from left-corner
                         newWidth = adjustedWidth;
-                    } else { 
+                    } else { // Corner resize, prioritize width change then adjust height
                         const tempNewHeight = newWidth / targetAspectRatio;
-                        if ((dragInfo.target === 'nw' && deltaY < 0) || (dragInfo.target === 'sw' && deltaY > 0)) {
-                            newY += newHeight - tempNewHeight;
+                        if ((dragInfo.target === 'nw' || dragInfo.target === 'sw') && newHeight !== tempNewHeight) {
+                           // If dragging a W corner, X changes, width changes. Height needs to adjust.
+                           // If N or S is also part of handle, Y might need to shift to maintain aspect.
+                           if (dragInfo.target.includes('n')) newY += newHeight - tempNewHeight;
                         }
                         newHeight = tempNewHeight;
                     }
                 }
             }
-            if (newWidth < minSize) { if (dragInfo.target.includes('w')) newX = cropRect.x + cropRect.width - minSize; newWidth = minSize; }
-            if (newHeight < minSize) { if (dragInfo.target.includes('n')) newY = cropRect.y + cropRect.height - minSize; newHeight = minSize; }
-            newX = Math.max(0, Math.min(newX, imageCanvas.width - newWidth));
-            newY = Math.max(0, Math.min(newY, imageCanvas.height - newHeight));
-            newWidth = Math.min(newWidth, imageCanvas.width - newX);
-            newHeight = Math.min(newHeight, imageCanvas.height - newY);
+            // Ensure minimum size
+            if (newWidth < minSize) { 
+                if (dragInfo.target.includes('w')) newX = cropRect.x + cropRect.width - minSize; 
+                newWidth = minSize; 
+            }
+            if (newHeight < minSize) { 
+                if (dragInfo.target.includes('n')) newY = cropRect.y + cropRect.height - minSize; 
+                newHeight = minSize; 
+            }
+
+            // Boundary checks against the displayed canvas dimensions
+            const displayedCanvasWidth = imageCanvas.clientWidth;
+            const displayedCanvasHeight = imageCanvas.clientHeight;
+
+            newX = Math.max(0, Math.min(newX, displayedCanvasWidth - newWidth));
+            newY = Math.max(0, Math.min(newY, displayedCanvasHeight - newHeight));
+            // Width/height might need re-clamping if X/Y were clamped
+            newWidth = Math.min(newWidth, displayedCanvasWidth - newX);
+            newHeight = Math.min(newHeight, displayedCanvasHeight - newY);
+
             cropRect.x = newX; cropRect.y = newY; cropRect.width = newWidth; cropRect.height = newHeight;
             updateCropSelectionVisuals();
         }
@@ -931,44 +1354,251 @@
         }
 
         applyCropBtn.addEventListener('click', () => {
-            if (activeImageIndex === -1 || !isCropping || !cropSelectionDiv) return;
+            if (activeImageIndex === -1 || !isCropping || !cropSelectionDiv || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
-            const scaleX = activeImgData.current.width / imageCanvas.width;
-            const scaleY = activeImgData.current.height / imageCanvas.height;
+
+            const displayedCanvasWidth = imageCanvas.clientWidth;
+            const displayedCanvasHeight = imageCanvas.clientHeight;
+
+            // Scale cropRect (which is relative to displayed canvas) to actual image dimensions
+            const scaleX = activeImgData.current.width / displayedCanvasWidth;
+            const scaleY = activeImgData.current.height / displayedCanvasHeight;
+            
             const sx = cropRect.x * scaleX;
             const sy = cropRect.y * scaleY;
             const sWidth = cropRect.width * scaleX;
             const sHeight = cropRect.height * scaleY;
+
             if (sWidth <= 0 || sHeight <= 0) {
-                showNotification('Error: Invalid crop area.', 'error');
+                showNotification('Error: Invalid crop area. Dimensions are too small.', 'error');
                 return;
             }
             const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = sWidth;
-            tempCanvas.height = sHeight;
+            tempCanvas.width = Math.round(sWidth); // Ensure integer dimensions
+            tempCanvas.height = Math.round(sHeight);
             const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(activeImgData.current, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
+            tempCtx.drawImage(activeImgData.current, sx, sy, sWidth, sHeight, 0, 0, tempCanvas.width, tempCanvas.height);
             
             const newCroppedImage = new Image();
             newCroppedImage.onload = () => {
                 activeImgData.current = newCroppedImage; 
+                saveState("Crop");
                 setActiveImage(activeImageIndex); 
                 showNotification(`"${activeImgData.name}.${activeImgData.ext}" cropped successfully!`);
             }
+            newCroppedImage.onerror = () => showNotification('Error creating cropped image data.', 'error');
             newCroppedImage.src = tempCanvas.toDataURL();
             cancelCropMode(); 
         });
 
-        fileFormatSelect.addEventListener('change', () => {
-            qualityContainer.style.display = (fileFormatSelect.value === 'image/png') ? 'none' : 'block';
+        // --- Adjustments (Filters, Transform, Text) ---
+        function resetAdjustmentControls() {
+            brightnessSlider.value = 100; brightnessValue.textContent = '100';
+            contrastSlider.value = 100; contrastValue.textContent = '100';
+            saturationSlider.value = 100; saturationValue.textContent = '100';
+            grayscaleSlider.value = 0; grayscaleValue.textContent = '0';
+            textOverlayInput.value = '';
+            // Reset tempFilters to defaults
+            tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
+        }
+        
+        function resetTempAdjustmentFilters(shouldRedraw = true) {
+             tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
+             resetAdjustmentControls(); // Also reset sliders to default
+             if (shouldRedraw && activeImageIndex !== -1 && imageStore[activeImageIndex]) {
+                drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+             }
+        }
+
+        [brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider].forEach(slider => {
+            slider.addEventListener('input', () => {
+                if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+                tempFilters.brightness = parseInt(brightnessSlider.value);
+                tempFilters.contrast = parseInt(contrastSlider.value);
+                tempFilters.saturation = parseInt(saturationSlider.value);
+                tempFilters.grayscale = parseInt(grayscaleSlider.value);
+
+                brightnessValue.textContent = tempFilters.brightness;
+                contrastValue.textContent = tempFilters.contrast;
+                saturationValue.textContent = tempFilters.saturation;
+                grayscaleValue.textContent = tempFilters.grayscale;
+                
+                drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+            });
         });
+        
+        resetAdjustmentsBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1) return;
+            resetTempAdjustmentFilters(); // This will reset sliders and redraw with no filters
+            showNotification('Adjustments preview reset.', 'success', 1500);
+        });
+
+        applyAdjustmentsBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+            
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = activeImgData.current.width;
+            tempCanvas.height = activeImgData.current.height;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            let filterString = '';
+            if (tempFilters.brightness !== 100) filterString += `brightness(${tempFilters.brightness}%) `;
+            if (tempFilters.contrast !== 100) filterString += `contrast(${tempFilters.contrast}%) `;
+            if (tempFilters.saturation !== 100) filterString += `saturate(${tempFilters.saturation}%) `;
+            if (tempFilters.grayscale !== 0) filterString += `grayscale(${tempFilters.grayscale}%) `;
+            
+            tempCtx.filter = filterString.trim();
+            tempCtx.drawImage(activeImgData.current, 0, 0);
+            tempCtx.filter = 'none'; // Important to reset
+
+            const newAdjustedImage = new Image();
+            newAdjustedImage.onload = () => {
+                activeImgData.current = newAdjustedImage;
+                saveState("Adjustments Applied");
+                setActiveImage(activeImageIndex); // This will redraw with the new current image
+                resetTempAdjustmentFilters(false); // Reset temp filters for next use, don't redraw again
+                showNotification('Adjustments applied successfully!', 'success');
+            };
+            newAdjustedImage.onerror = () => showNotification('Error applying adjustments.', 'error');
+            newAdjustedImage.src = tempCanvas.toDataURL();
+        });
+
+        // Transform functions
+        function applyTransformation(transformationType) {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+            const img = activeImgData.current;
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            if (transformationType === 'rotateLeft' || transformationType === 'rotateRight') {
+                tempCanvas.width = img.height;
+                tempCanvas.height = img.width;
+                tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+                tempCtx.rotate(transformationType === 'rotateLeft' ? -Math.PI / 2 : Math.PI / 2);
+                tempCtx.drawImage(img, -img.width / 2, -img.height / 2);
+            } else if (transformationType === 'flipHorizontal') {
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                tempCtx.translate(img.width, 0);
+                tempCtx.scale(-1, 1);
+                tempCtx.drawImage(img, 0, 0);
+            } else if (transformationType === 'flipVertical') {
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                tempCtx.translate(0, img.height);
+                tempCtx.scale(1, -1);
+                tempCtx.drawImage(img, 0, 0);
+            }
+
+            const newTransformedImage = new Image();
+            newTransformedImage.onload = () => {
+                activeImgData.current = newTransformedImage;
+                saveState(transformationType);
+                setActiveImage(activeImageIndex);
+                showNotification(`${transformationType.replace(/([A-Z])/g, ' $1').trim()} applied.`, 'success');
+            };
+            newTransformedImage.onerror = () => showNotification(`Error applying ${transformationType}.`, 'error');
+            newTransformedImage.src = tempCanvas.toDataURL();
+        }
+
+        rotateLeftBtn.addEventListener('click', () => applyTransformation('rotateLeft'));
+        rotateRightBtn.addEventListener('click', () => applyTransformation('rotateRight'));
+        flipHorizontalBtn.addEventListener('click', () => applyTransformation('flipHorizontal'));
+        flipVerticalBtn.addEventListener('click', () => applyTransformation('flipVertical'));
+
+        // Text Overlay
+        addTextButton.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) {
+                showNotification('Please select an image first.', 'warning');
+                return;
+            }
+            const text = textOverlayInput.value.trim();
+            if (!text) {
+                showNotification('Please enter text to add.', 'warning');
+                return;
+            }
+            isAddingText = true;
+            imageCanvas.style.cursor = 'text';
+            showNotification('Click on the image to place the text.', 'info');
+            // Disable other interactions temporarily
+            startCropBtn.disabled = true;
+        });
+
+        function cancelAddTextMode() {
+            isAddingText = false;
+            imageCanvas.style.cursor = 'grab'; // Or whatever the default is
+            if (activeImageIndex !== -1) startCropBtn.disabled = false;
+        }
+        
+        imageCanvas.addEventListener('click', (e) => {
+            if (!isAddingText || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+
+            const activeImgData = imageStore[activeImageIndex];
+            const text = textOverlayInput.value.trim();
+            const color = textColorInput.value;
+            const size = parseInt(textSizeInput.value);
+            const font = textFontInput.value;
+
+            if (!text || isNaN(size) || size <=0) {
+                showNotification('Invalid text settings.', 'error');
+                cancelAddTextMode();
+                return;
+            }
+
+            const rect = imageCanvas.getBoundingClientRect();
+            // Click coordinates relative to the *displayed* canvas
+            const xOnDisplayedCanvas = e.clientX - rect.left;
+            const yOnDisplayedCanvas = e.clientY - rect.top;
+
+            // Scale these coordinates to the *actual* image resolution
+            const scaleX = activeImgData.current.width / imageCanvas.clientWidth;
+            const scaleY = activeImgData.current.height / imageCanvas.clientHeight;
+            const xOnActualImage = xOnDisplayedCanvas * scaleX;
+            const yOnActualImage = yOnDisplayedCanvas * scaleY;
+            const scaledSize = size * scaleX; // Scale font size too
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = activeImgData.current.width;
+            tempCanvas.height = activeImgData.current.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(activeImgData.current, 0, 0); // Draw current image
+            
+            tempCtx.fillStyle = color;
+            tempCtx.font = `${scaledSize}px ${font}`;
+            tempCtx.textAlign = 'left'; // Or center, depending on desired placement relative to click
+            tempCtx.textBaseline = 'top'; // Or middle
+            tempCtx.fillText(text, xOnActualImage, yOnActualImage);
+
+            const newImageWithText = new Image();
+            newImageWithText.onload = () => {
+                activeImgData.current = newImageWithText;
+                saveState("Text Added");
+                setActiveImage(activeImageIndex);
+                showNotification('Text added successfully!', 'success');
+            };
+            newImageWithText.onerror = () => showNotification('Error adding text to image.', 'error');
+            newImageWithText.src = tempCanvas.toDataURL();
+            
+            cancelAddTextMode();
+        });
+
+
+        // --- Export Functionality ---
+        function updateQualityVisibility() {
+            qualityContainer.style.display = (fileFormatSelect.value === 'image/png') ? 'none' : 'block';
+        }
+        fileFormatSelect.addEventListener('change', updateQualityVisibility);
         qualitySlider.addEventListener('input', () => qualityValue.textContent = qualitySlider.value);
 
-        async function exportSingleImage(imgData, baseFilename) { 
-            const format = fileFormatSelect.value;
-            let quality = parseFloat(qualitySlider.value);
-            const targetSizeKB = parseFloat(targetFileSizeInput.value);
-            const finalFileName = `${baseFilename}.${format.split('/')[1]}`;
+        async function exportSingleImage(imgData, baseFilename, exportFormat, exportQuality, targetKB) { 
+            // Determine the correct file extension
+            let fileExtension = exportFormat.split('/')[1];
+            if (exportFormat === 'image/jpeg') {
+                fileExtension = 'jpg'; // Ensure .jpg for JPEG images
+            }
+            const finalFileName = `${baseFilename}.${fileExtension}`;
 
             const exportCanvas = document.createElement('canvas');
             exportCanvas.width = imgData.current.width;
@@ -977,33 +1607,48 @@
             exportCtx.drawImage(imgData.current, 0, 0); 
 
             let blob;
-            if (!isNaN(targetSizeKB) && (format === 'image/jpeg' || format === 'image/webp')) {
-                let currentQuality = quality; 
-                let minQuality = 0.1; let maxQuality = 1.0;
-                let bestBlob = null; let bestBlobSize = Infinity;
-                for (let i = 0; i < 10; i++) { 
-                    const dataUrl = exportCanvas.toDataURL(format, currentQuality); 
+            if (!isNaN(targetKB) && targetKB > 0 && (exportFormat === 'image/jpeg' || exportFormat === 'image/webp')) {
+                let currentQuality = exportQuality; 
+                let minQuality = 0.01; let maxQuality = 1.0; // Ensure minQuality is very low
+                let bestBlob = null; let bestBlobSizeDiff = Infinity;
+                const MAX_ITERATIONS = 10;
+
+                for (let i = 0; i < MAX_ITERATIONS; i++) { 
+                    const dataUrl = exportCanvas.toDataURL(exportFormat, currentQuality); 
                     const tempBlob = await dataURLtoBlob(dataUrl); 
                     const currentSizeKB = tempBlob.size / 1024;
-                    if (currentSizeKB <= targetSizeKB) {
-                        if (!bestBlob || currentSizeKB > bestBlob.size / 1024) {
-                            bestBlob = tempBlob; bestBlobSize = currentSizeKB;
-                        }
-                        minQuality = currentQuality; 
-                    } else {
+                    const diff = currentSizeKB - targetKB;
+
+                    // If we are within 5% or very close, and smaller, it's a good candidate
+                    if (diff <= 0 && Math.abs(diff) < bestBlobSizeDiff) {
+                        bestBlob = tempBlob;
+                        bestBlobSizeDiff = Math.abs(diff);
+                    }
+                    
+                    if (Math.abs(diff / targetKB) < 0.05) { // Within 5%
+                        bestBlob = tempBlob; // Prefer this if it meets target
+                        break;
+                    }
+
+                    if (diff > 0) { // Too large, reduce quality
                         maxQuality = currentQuality;
+                    } else { // Too small, increase quality
+                        minQuality = currentQuality;
                     }
-                    if (bestBlob && (maxQuality - minQuality) < 0.05) break;
-                    if (Math.abs(currentSizeKB - targetSizeKB) / targetSizeKB < 0.05) {
-                        bestBlob = tempBlob; bestBlobSize = currentSizeKB; break;
-                    }
+                    
+                    if ((maxQuality - minQuality) < 0.01) break; // Converged
+                    
                     currentQuality = (minQuality + maxQuality) / 2;
-                    if (currentQuality < 0.01) currentQuality = 0.01; 
-                    if (Math.abs(maxQuality - minQuality) < 0.01) break; 
                 }
-                blob = bestBlob || (await dataURLtoBlob(exportCanvas.toDataURL(format, quality))); 
+                blob = bestBlob || (await dataURLtoBlob(exportCanvas.toDataURL(exportFormat, exportQuality))); 
+                if (bestBlob) {
+                     showNotification(`Achieved ~${formatBytes(bestBlob.size)} for target ${targetKB}KB.`, 'info', 2000);
+                } else {
+                     showNotification(`Could not meet target size precisely. Got ${formatBytes(blob.size)}.`, 'warning', 2000);
+                }
+
             } else {
-                const dataUrl = exportCanvas.toDataURL(format, (format === 'image/png') ? undefined : quality); 
+                const dataUrl = exportCanvas.toDataURL(exportFormat, (exportFormat === 'image/png') ? undefined : exportQuality); 
                 blob = await dataURLtoBlob(dataUrl);
             }
             
@@ -1016,18 +1661,22 @@
         }
 
         downloadActiveButton.addEventListener('click', async () => {
-            if (activeImageIndex === -1) return; 
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
             
-            exportLoader.classList.remove('hidden');
+            exportLoader.style.display = 'flex'; // Use flex for centering loader
             exportMessage.textContent = `Processing active image...`;
             downloadActiveButton.disabled = true;
             downloadAllButton.disabled = true;
 
             const activeImgData = imageStore[activeImageIndex];
             const baseName = fileNameInput.value || `${activeImgData.name}_edited`;
+            const format = fileFormatSelect.value;
+            let quality = parseFloat(qualitySlider.value);
+            const targetSizeKB = parseFloat(targetFileSizeInput.value);
+
 
             try {
-                const exportedName = await exportSingleImage(activeImgData, baseName);
+                const exportedName = await exportSingleImage(activeImgData, baseName, format, quality, targetSizeKB);
                 showNotification(`"${exportedName}" downloaded successfully!`);
                 exportMessage.textContent = `"${exportedName}" downloaded.`;
             } catch (error) {
@@ -1035,7 +1684,7 @@
                 showNotification(`Error exporting active image: ${error.message}`, 'error');
                 exportMessage.textContent = `Error exporting active image.`;
             } finally {
-                exportLoader.classList.add('hidden');
+                exportLoader.style.display = 'none';
                 enableAllControls();
             }
         });
@@ -1043,47 +1692,43 @@
         downloadAllButton.addEventListener('click', async () => {
             if (imageStore.length === 0) return;
 
-            exportLoader.classList.remove('hidden');
+            exportLoader.style.display = 'flex';
             downloadActiveButton.disabled = true;
             downloadAllButton.disabled = true;
             let successCount = 0;
             let errorCount = 0;
 
+            const globalFormat = fileFormatSelect.value;
+            const globalQuality = parseFloat(qualitySlider.value);
+            const globalTargetSizeKB = parseFloat(targetFileSizeInput.value);
+
+
             for (let i = 0; i < imageStore.length; i++) {
                 const imgData = imageStore[i];
                 exportMessage.textContent = `Processing image ${i + 1} of ${imageStore.length}: ${imgData.name}.${imgData.ext}`;
                 try {
-                    const baseName = `${imgData.name}_edited`; 
-                    await exportSingleImage(imgData, baseName);
+                    // Use global export settings for batch download, but unique name from original
+                    const baseName = `${imgData.name}_edited_batch_${i+1}`; 
+                    await exportSingleImage(imgData, baseName, globalFormat, globalQuality, globalTargetSizeKB);
                     successCount++;
-                    await new Promise(resolve => setTimeout(resolve, 200)); 
+                    await new Promise(resolve => setTimeout(resolve, 200)); // Small delay between downloads
                 } catch (error) {
                     console.error(`Batch export error for ${imgData.name}:`, error);
                     errorCount++;
                 }
             }
 
-            exportLoader.classList.add('hidden');
+            exportLoader.style.display = 'none';
             enableAllControls();
             const finalMessage = `${successCount} image(s) downloaded. ${errorCount > 0 ? errorCount + ' error(s).' : ''}`;
             exportMessage.textContent = finalMessage;
-            showNotification(finalMessage, errorCount > 0 ? 'error' : 'success');
+            showNotification(finalMessage, errorCount > 0 ? 'warning' : 'success');
         });
-
-
-        function dataURLtoBlob(dataurl) { return fetch(dataurl).then(res => res.blob()); }
         
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => { clearTimeout(timeout); func(...args); };
-                clearTimeout(timeout); timeout = setTimeout(later, wait);
-            };
-        }
-
+        // --- Window Resize Listener ---
         const debouncedRedraw = debounce(() => {
             if (activeImageIndex !== -1 && imageStore[activeImageIndex]) { 
-                drawImageToCanvas(imageStore[activeImageIndex].current); 
+                drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters); 
                 if (isCropping && cropSelectionDiv) updateCropSelectionVisuals();
             }
         }, 250); 
