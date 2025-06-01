@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Image Editor - Enhanced</title> {/* Title in head also updated for consistency */}
+    <title>Free Image Editor - Enhanced</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -28,11 +28,11 @@
             max-height: 100%;
             object-fit: contain;
             cursor: grab;
-            transition: transform 0.2s ease-out; /* For zoom */
+            transition: transform 0.2s ease-out;
         }
         .crop-selection {
             position: absolute;
-            border: 2px dashed #3b82f6; /* blue-500 */
+            border: 2px dashed #3b82f6;
             box-sizing: border-box;
             cursor: move;
             z-index: 10;
@@ -41,7 +41,7 @@
             position: absolute;
             width: 10px;
             height: 10px;
-            background-color: #3b82f6; /* blue-500 */
+            background-color: #3b82f6;
             border: 1px solid white;
             border-radius: 50%;
             z-index: 20;
@@ -57,7 +57,7 @@
         
         .crop-grid-line {
             position: absolute;
-            background-color: rgba(0, 0, 0, 0.4); /* Darker, more visible grid lines */
+            background-color: rgba(0, 0, 0, 0.4);
         }
         .crop-grid-line.vertical { width: 1px; height: 100%; }
         .crop-grid-line.horizontal { height: 1px; width: 100%; }
@@ -70,8 +70,8 @@
         .tab-content.active { display: block; }
 
         .loader {
-            border: 4px solid #4b5563; /* gray-600 */
-            border-top: 4px solid #60a5fa; /* blue-400 */
+            border: 4px solid #4b5563;
+            border-top: 4px solid #60a5fa;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -82,49 +82,48 @@
             100% { transform: rotate(360deg); }
         }
         .control-panel::-webkit-scrollbar { width: 8px; }
-        .control-panel::-webkit-scrollbar-track { background: #374151; /* gray-700 */ border-radius: 10px; } 
-        .control-panel::-webkit-scrollbar-thumb { background: #6b7280; /* gray-500 */ border-radius: 10px; } 
-        .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; /* gray-400 */ } 
+        .control-panel::-webkit-scrollbar-track { background: #374151; border-radius: 10px; } 
+        .control-panel::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; } 
+        .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; } 
 
         input[type="number"], input[type="text"], select, input[type="range"], input[type="color"] {
-            background-color: #374151; /* gray-700 */
-            color: #f3f4f6; /* gray-100 */
-            border-color: #4b5563; /* gray-600 */
-            padding: 0.5rem; /* Consistent padding */
+            background-color: #374151;
+            color: #f3f4f6;
+            border-color: #4b5563;
+            padding: 0.5rem;
         }
         input[type="number"]::placeholder, input[type="text"]::placeholder {
-            color: #9ca3af; /* gray-400 */
+            color: #9ca3af;
         }
-        /* Ensure specificity for file input button colors */
         .file\:bg-blue-800 { background-color: #1e3a8a !important; }
         .file\:text-blue-300 { color: #93c5fd !important; }
-        .hover\:file\:bg-blue-700:hover .file\:bg-blue-800 { background-color: #1e40af !important; } /* Check specificity for hover */
+        .hover\:file\:bg-blue-700:hover .file\:bg-blue-800 { background-color: #1e40af !important; }
         
         #imageSelectorList button {
             display: block;
             width: 100%;
             text-align: left;
             padding: 8px 12px; 
-            border-bottom: 1px solid #4b5563; /* gray-600 */
-            font-size: 0.875rem; /* text-sm */
+            border-bottom: 1px solid #4b5563;
+            font-size: 0.875rem;
             transition: background-color 0.2s;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            border-radius: 4px; /* rounded-sm or rounded depending on desired curve */
-            margin-bottom: 2px; /* For spacing if needed */
+            border-radius: 4px;
+            margin-bottom: 2px;
         }
         #imageSelectorList button:last-child {
             border-bottom: none;
             margin-bottom: 0;
         }
         #imageSelectorList button:hover {
-            background-color: #4b5563; /* gray-600 */
+            background-color: #4b5563;
         }
         #imageSelectorList button.active-image {
-            background-color: #2563eb; /* blue-600 */
+            background-color: #2563eb;
             color: white;
-            font-weight: 600; /* semibold */
+            font-weight: 600;
         }
 
         .notification {
@@ -132,7 +131,6 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            /* color should be set by type (success, error, etc.) */
             padding: 12px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -145,33 +143,32 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-        .notification.fade-out { /* Used for fade out before removal */
+        .notification.fade-out {
             opacity: 0;
             transform: translateX(-50%) translateY(20px);
         }
-        .notification.success { background-color: #10B981; /* green-500 */ color: white; }
-        .notification.error { background-color: #EF4444; /* red-500 */ color: white; }
-        .notification.warning { background-color: #F59E0B; /* amber-500 */ color: white; }
-        .notification.info { background-color: #3B82F6; /* blue-500 */ color: white; }
+        .notification.success { background-color: #10B981; color: white; }
+        .notification.error { background-color: #EF4444; color: white; }
+        .notification.warning { background-color: #F59E0B; color: white; }
+        .notification.info { background-color: #3B82F6; color: white; }
 
 
-        /* Tooltip styles */
         [data-tooltip]:hover::after {
             content: attr(data-tooltip);
             position: absolute;
             bottom: 100%;
             left: 50%;
-            transform: translateX(-50%) translateY(-5px); /* Small gap */
-            background-color: #1f2937; /* gray-800 */
+            transform: translateX(-50%) translateY(-5px);
+            background-color: #1f2937;
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
-            font-size: 0.75rem; /* text-xs */
+            font-size: 0.75rem;
             white-space: nowrap;
-            z-index: 100; /* Ensure tooltip is on top */
+            z-index: 100;
         }
         [data-tooltip] {
-            position: relative; /* Needed for absolute positioning of ::after */
+            position: relative;
         }
         .zoom-controls {
             position: absolute;
@@ -179,16 +176,16 @@
             right: 10px;
             display: flex;
             gap: 5px;
-            background-color: rgba(49, 49, 49, 0.7); /* Darker, semi-transparent */
+            background-color: rgba(49, 49, 49, 0.7);
             padding: 8px;
             border-radius: 8px;
-            z-index: 5; /* Above canvas, below crop selection if needed */
+            z-index: 5;
         }
         .zoom-controls button {
-            background-color: #4b5563; /* gray-600 */
+            background-color: #4b5563;
             color: white;
             border: none;
-            border-radius: 50%; /* Circular buttons */
+            border-radius: 50%;
             width: 30px;
             height: 30px;
             font-size: 16px;
@@ -198,13 +195,13 @@
             justify-content: center;
         }
         .zoom-controls button:hover {
-            background-color: #6b7280; /* gray-500 */
+            background-color: #6b7280;
         }
         .zoom-controls span {
             color: white;
             font-size: 14px;
             padding: 0 5px;
-            line-height: 30px; /* Vertically center text with buttons */
+            line-height: 30px;
         }
 
     </style>
@@ -236,7 +233,7 @@
         <div id="imageSelectorContainer" class="mb-4 hidden">
             <h3 class="text-md font-semibold text-gray-300 mb-2">Select Image to Edit:</h3>
             <div id="imageSelectorList" class="max-h-48 overflow-y-auto bg-gray-700/50 rounded-md p-2 space-y-1">
-                </div>
+            </div>
         </div>
         
         <button id="resetImage" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mb-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Reset active image to its original state">
@@ -386,7 +383,9 @@
             <p id="exportMessage" class="text-sm text-gray-400 mt-2"></p>
         </div>
         
-        <div class="flex-grow"></div> <div>
+        <div class="flex-grow"></div>
+
+        <div>
             <div class="pt-4 border-t border-gray-700">
                 <h3 class="text-md font-semibold text-gray-300 mb-2">Active Image Info:</h3>
                 <p class="text-sm text-gray-400">Name: <span id="activeImageName">N/A</span></p>
@@ -396,7 +395,7 @@
 
             <div class="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-400 text-left">
                 <p>Made by <a href="https://frandez.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-300">frandez.com</a></p>
-                <p class="mt-1">This exists because all other sites are greedy</p>
+                <p class="mt-1">This exists because all other sites are greedy.</p>
             </div>
         </div>
     </div>
@@ -417,12 +416,11 @@
     </div>
 
     <div id="notificationArea" class="fixed bottom-5 right-5 space-y-2 z-50">
-        </div>
+    </div>
 
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // DOM Elements
         const imageUpload = document.getElementById('imageUpload');
         const loadedFileNameEl = document.getElementById('loadedFileName');
         const imageSelectorContainer = document.getElementById('imageSelectorContainer');
@@ -442,7 +440,6 @@
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
 
-        // Resize Tab
         const resizePercent = document.getElementById('resizePercent');
         const resizePercentValue = document.getElementById('resizePercentValue');
         const resizeWidthInput = document.getElementById('resizeWidth'); 
@@ -450,7 +447,6 @@
         const aspectLock = document.getElementById('aspectLock');
         const applyResizeBtn = document.getElementById('applyResize');
 
-        // Crop Tab
         const aspectRatioSelect = document.getElementById('aspectRatio');
         const cropWidthEl = document.getElementById('cropWidth');
         const cropHeightEl = document.getElementById('cropHeight');
@@ -458,7 +454,6 @@
         const applyCropBtn = document.getElementById('applyCrop');
         const cancelCropBtn = document.getElementById('cancelCrop');
 
-        // Adjust Tab
         const rotateLeftBtn = document.getElementById('rotateLeft');
         const rotateRightBtn = document.getElementById('rotateRight');
         const flipHorizontalBtn = document.getElementById('flipHorizontal');
@@ -480,32 +475,29 @@
         const addTextButton = document.getElementById('addTextButton');
 
 
-        // Export Tab
         const fileNameInput = document.getElementById('fileName');
         const fileFormatSelect = document.getElementById('fileFormat');
         const qualityContainer = document.getElementById('qualityContainer');
         const qualitySlider = document.getElementById('quality');
-        const qualityValue = document.getElementById('qualityValue'); // Ensure this is the correct span ID
+        const qualityValue = document.getElementById('qualityValue');
         const targetFileSizeInput = document.getElementById('targetFileSize');
         const downloadActiveButton = document.getElementById('downloadActiveButton');
         const downloadAllButton = document.getElementById('downloadAllButton');
         const exportLoader = document.getElementById('exportLoader');
         const exportMessage = document.getElementById('exportMessage');
 
-        // Zoom Controls
         const zoomInBtn = document.getElementById('zoomInBtn');
         const zoomOutBtn = document.getElementById('zoomOutBtn');
         const zoomResetBtn = document.getElementById('zoomResetBtn');
         const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
         
-        // State Variables
-        let imageStore = []; // Stores { id, original: Image, current: Image, history: [Image.src], historyPointer: -1, name, ext, originalFileSizeBytes }
+        let imageStore = [];
         let activeImageIndex = -1; 
         let currentZoomLevel = 1.0;
         const ZOOM_STEP = 0.1;
 
         let isCropping = false;
-        let cropRect = { x: 0, y: 0, width: 0, height: 0 }; // Values relative to unzoomed canvas client dimensions
+        let cropRect = { x: 0, y: 0, width: 0, height: 0 };
         let cropSelectionDiv = null;
         let cropHandles = [];
         let cropGridLines = [];
@@ -515,15 +507,13 @@
         let tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
 
 
-        // Initialization
         disableAllControls(); 
         setupTabs(); 
         updateQualityVisibility(); 
 
-        // --- Utility Functions ---
         function showNotification(message, type = 'success', duration = 3000) {
             const notification = document.createElement('div');
-            notification.className = `notification ${type}`; // type class handles color
+            notification.className = `notification ${type}`;
             notification.textContent = message;
             notificationArea.appendChild(notification);
             void notification.offsetWidth; 
@@ -558,7 +548,6 @@
             };
         }
 
-        // --- History Management ---
         function saveState(operationName = "Unknown operation") {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
@@ -606,7 +595,6 @@
         });
 
 
-        // --- Tab Management ---
         function setupTabs() {
             const activeClasses = ['bg-blue-500', 'text-white']; 
             const inactiveClasses = ['text-gray-400', 'hover:text-gray-200', 'hover:bg-gray-700'];
@@ -641,7 +629,6 @@
                         resetTempAdjustmentFilters(false); 
                     } else {
                         if (activeImageIndex !== -1) {
-                             // Sliders already reflect tempFilters, draw to ensure canvas matches
                             drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
                         }
                     }
@@ -649,7 +636,6 @@
             });
         }
 
-        // --- Control Disabling/Enabling ---
         function disableAllControls() { 
             const buttonsToDisable = [
                 applyResizeBtn, startCropBtn, applyCropBtn, cancelCropBtn, downloadActiveButton, 
@@ -690,7 +676,6 @@
             undoButton.disabled = activeImgData.historyPointer <= 0;
         }
         
-        // --- Image Loading and Management ---
         imageUpload.addEventListener('change', async (event) => {
             const files = event.target.files;
             if (!files || files.length === 0) {
@@ -779,7 +764,7 @@
             }
         }
 
-        function setActiveImage(index, shouldSaveState = true) { // Default to true, but often overridden
+        function setActiveImage(index, shouldSaveState = true) {
             if (index < 0 || index >= imageStore.length) return;
             
             if (isCropping) cancelCropMode(); 
@@ -805,20 +790,17 @@
             enableAllControls(); 
             canvasMessage.classList.add('hidden');
             currentZoomLevel = 1.0; 
-            applyZoom(); // This will redraw with new zoom and update display
+            applyZoom();
 
-            // Save state is typically handled by the operation causing the change, not by switching.
-            // if (shouldSaveState) { saveState("Set Active Image"); }
             undoButton.disabled = activeImgData.historyPointer <= 0;
         }
         
-        // --- Canvas Drawing ---
         function drawImageToCanvas(imageToDraw, zoom = currentZoomLevel, filters = null) {
             if (!imageToDraw) {
                 ctx.clearRect(0,0,imageCanvas.width, imageCanvas.height);
                 canvasMessage.classList.remove('hidden');
                 canvasMessage.innerHTML = '<p>No image selected or loaded.</p>';
-                imageCanvas.style.transform = `scale(1)`; // Reset transform
+                imageCanvas.style.transform = `scale(1)`;
                 imageCanvas.style.width = 'auto';
                 imageCanvas.style.height = 'auto';
                 return;
@@ -885,7 +867,6 @@
             }
         }
 
-        // --- Zoom Functionality ---
         zoomInBtn.addEventListener('click', () => {
             currentZoomLevel = Math.min(3.0, currentZoomLevel + ZOOM_STEP); 
             applyZoom();
@@ -909,7 +890,6 @@
             }
         }
         
-        // --- Reset Active Image ---
         resetImageBtn.addEventListener('click', () => {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             
@@ -927,7 +907,6 @@
             newCurrentImage.src = activeImgData.original.src; 
         });
 
-        // --- Resize Functionality ---
         function resetResizeControlsForActive() {
             resizePercent.value = 100;
             resizePercentValue.textContent = '100';
@@ -986,7 +965,7 @@
             const percentW = (w / activeImg.width) * 100;
             const percentH = (h / activeImg.height) * 100;
             const representativePercent = aspectLock.checked ? Math.round((percentW + percentH) / 2) : Math.round(percentW);
-            resizePercent.value = representativePercent > 0 ? Math.min(representativePercent, 200) : 1; // Cap at max
+            resizePercent.value = representativePercent > 0 ? Math.min(representativePercent, 200) : 1;
             resizePercentValue.textContent = resizePercent.value;
         }
 
@@ -1050,7 +1029,6 @@
             }
         });
 
-        // --- Crop Functionality ---
         startCropBtn.addEventListener('click', () => {
             if (activeImageIndex === -1) {
                 showNotification("Please select an image to crop.", "warning");
@@ -1089,7 +1067,6 @@
                 isCropping = false; startCropBtn.disabled = (activeImageIndex === -1);
                 return;
             }
-            // Use unzoomed client dimensions for initial cropRect definition
             const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
             const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
 
@@ -1106,7 +1083,6 @@
             
             localCanvasHost.appendChild(cropSelectionDiv);
 
-            // cropRect values are relative to the UNZOOMED canvas client area
             const initialWidthUnzoomed = unzoomedCanvasClientWidth * 0.8;
             const initialHeightUnzoomed = unzoomedCanvasClientHeight * 0.8;
             const initialXUnzoomed = (unzoomedCanvasClientWidth - initialWidthUnzoomed) / 2;
@@ -1146,22 +1122,18 @@
             if (!localCanvasHost) { console.error("updateCropSelectionVisuals: canvasHost is null!"); return; }
 
             const canvasHostRect = localCanvasHost.getBoundingClientRect();
-            const imageCanvasRect = imageCanvas.getBoundingClientRect(); // Rect of the SCALED canvas element
+            const imageCanvasRect = imageCanvas.getBoundingClientRect();
 
-            // Top-left of the SCALED canvas element, relative to canvasHost
             const visualCanvasLeftInHost = imageCanvasRect.left - canvasHostRect.left;
             const visualCanvasTopInHost = imageCanvasRect.top - canvasHostRect.top;
 
-            // cropRect.x, .y, .width, .height are defined relative to the UNZOOMED canvas client dimensions.
-            // Scale these values by currentZoomLevel for positioning and sizing the cropSelectionDiv over the ZOOMED canvas.
             cropSelectionDiv.style.left = `${visualCanvasLeftInHost + (cropRect.x * currentZoomLevel)}px`;
             cropSelectionDiv.style.top = `${visualCanvasTopInHost + (cropRect.y * currentZoomLevel)}px`;
             cropSelectionDiv.style.width = `${cropRect.width * currentZoomLevel}px`;
             cropSelectionDiv.style.height = `${cropRect.height * currentZoomLevel}px`;
 
-            // Update crop dimension display (these are actual image pixels)
-            const unzoomedCanvasClientWidth = imageCanvas.clientWidth;  // Unzoomed client width
-            const unzoomedCanvasClientHeight = imageCanvas.clientHeight; // Unzoomed client height
+            const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
+            const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
             
             if (unzoomedCanvasClientWidth > 0 && unzoomedCanvasClientHeight > 0) {
                 const scaleFactorX = activeImgData.current.width / unzoomedCanvasClientWidth;
@@ -1173,8 +1145,6 @@
                 cropHeightEl.value = 0;
             }
             
-            // Handles and grid lines are children of cropSelectionDiv. Their % positioning works relative to it.
-            // Create them only if they don't exist and cropSelectionDiv is present.
             if (cropSelectionDiv) {
                 if (cropHandles.length === 0) {
                     const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
@@ -1210,7 +1180,6 @@
             const selectedRatio = aspectRatioSelect.value;
             if (selectedRatio === 'freeform') return;
 
-            // Use UNZOOMED client dimensions for aspect ratio calculations of cropRect
             const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
             const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
 
@@ -1222,7 +1191,6 @@
                 ratioValue = parts[0] / parts[1];
             }
             
-            // cropRect is in unzoomed coordinates.
             let newUnzoomedWidth = cropRect.width; 
             let newUnzoomedHeight = newUnzoomedWidth / ratioValue;
 
@@ -1258,7 +1226,7 @@
 
         function onCropMouseMove(e) {
             if (!isCropping || !dragInfo.active || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
-            const activeImgData = imageStore[activeImageIndex]; // Renamed from activeImgData
+            const activeImgData = imageStore[activeImageIndex];
             const localCanvasHost = document.getElementById('canvasHost');
             if (!localCanvasHost) { console.error("onCropMouseMove: canvasHost not found!"); return; }
 
@@ -1269,11 +1237,9 @@
             const mouseXOnHost = e.clientX - hostBoundingRect.left;
             const mouseYOnHost = e.clientY - hostBoundingRect.top;
 
-            // Delta mouse movement in screen pixels
             const deltaX_screen = mouseXOnHost - dragInfo.startX;
             const deltaY_screen = mouseYOnHost - dragInfo.startY;
 
-            // Scale deltas to unzoomed canvas coordinates for cropRect modification
             const deltaX = deltaX_screen / currentZoomLevel;
             const deltaY = deltaY_screen / currentZoomLevel;
             
@@ -1281,7 +1247,7 @@
             let newY = dragInfo.originalRect.y;
             let newWidth = dragInfo.originalRect.width;
             let newHeight = dragInfo.originalRect.height;
-            const minSize = 20 / currentZoomLevel; // Min size in unzoomed coords
+            const minSize = 20 / currentZoomLevel;
 
             if (dragInfo.target === 'selection') {
                 newX = dragInfo.originalRect.x + deltaX;
@@ -1302,7 +1268,6 @@
                         targetAspectRatio = parts[0] / parts[1];
                     }
 
-                    // Adjust based on which dimension was primarily changed by the handle
                     if (dragInfo.target.includes('w') || dragInfo.target.includes('e')) { 
                         const adjustedHeight = newWidth / targetAspectRatio;
                         if (dragInfo.target.includes('n')) newY += newHeight - adjustedHeight; 
@@ -1311,11 +1276,9 @@
                         const adjustedWidth = newHeight * targetAspectRatio;
                          if (dragInfo.target.includes('w')) newX += newWidth - adjustedWidth; 
                         newWidth = adjustedWidth;
-                    } else { // Corner resize, typically width leads, height adjusts
+                    } else {
                         const tempNewHeight = newWidth / targetAspectRatio;
-                        // If Y position is also changing due to N/S part of handle, adjust Y
                         if (dragInfo.target.includes('n')) newY = (dragInfo.originalRect.y + dragInfo.originalRect.height) - tempNewHeight;
-                        // else if (dragInfo.target.includes('s')) { /* Y is fine */ }
                         newHeight = tempNewHeight;
                     }
                 }
@@ -1334,7 +1297,7 @@
 
             newX = Math.max(0, Math.min(newX, unzoomedCanvasClientWidth - newWidth));
             newY = Math.max(0, Math.min(newY, unzoomedCanvasClientHeight - newHeight));
-            newWidth = Math.min(newWidth, unzoomedCanvasClientWidth - newX); // Re-clamp width/height
+            newWidth = Math.min(newWidth, unzoomedCanvasClientWidth - newX);
             newHeight = Math.min(newHeight, unzoomedCanvasClientHeight - newY);
 
             cropRect.x = newX; cropRect.y = newY; cropRect.width = newWidth; cropRect.height = newHeight;
@@ -1350,8 +1313,6 @@
             if (activeImageIndex === -1 || !isCropping || !cropSelectionDiv || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
 
-            // cropRect is in unzoomed canvas client coordinates.
-            // Scale these to actual image pixel coordinates for cropping the source image.
             const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
             const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
 
@@ -1390,7 +1351,6 @@
             cancelCropMode(); 
         });
 
-        // --- Adjustments (Filters, Transform, Text) ---
         function resetAdjustmentControls() {
             brightnessSlider.value = 100; brightnessValue.textContent = '100';
             contrastSlider.value = 100; contrastValue.textContent = '100';
@@ -1462,7 +1422,6 @@
             newAdjustedImage.src = tempCanvas.toDataURL();
         });
 
-        // Transform functions
         function applyTransformation(transformationType) {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
@@ -1506,7 +1465,6 @@
         flipHorizontalBtn.addEventListener('click', () => applyTransformation('flipHorizontal'));
         flipVerticalBtn.addEventListener('click', () => applyTransformation('flipVertical'));
 
-        // Text Overlay
         addTextButton.addEventListener('click', () => {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) {
                 showNotification('Please select an image first.', 'warning');
@@ -1544,22 +1502,19 @@
                 return;
             }
 
-            const rect = imageCanvas.getBoundingClientRect(); // Of the scaled canvas
+            const rect = imageCanvas.getBoundingClientRect();
             const xOnScaledCanvas = e.clientX - rect.left;
             const yOnScaledCanvas = e.clientY - rect.top;
 
-            // Convert click on scaled canvas to point on original image resolution
-            // Scale factor from unzoomed client canvas to original image
             const scaleClientToImageX = activeImgData.current.width / imageCanvas.clientWidth;
             const scaleClientToImageY = activeImgData.current.height / imageCanvas.clientHeight;
 
-            // Convert click on scaled canvas to click on unzoomed client canvas
             const xOnUnzoomedClient = xOnScaledCanvas / currentZoomLevel;
             const yOnUnzoomedClient = yOnScaledCanvas / currentZoomLevel;
             
             const xOnActualImage = xOnUnzoomedClient * scaleClientToImageX;
             const yOnActualImage = yOnUnzoomedClient * scaleClientToImageY;
-            const scaledSizeOnImage = size * scaleClientToImageX; // Scale font size based on width scale
+            const scaledSizeOnImage = size * scaleClientToImageX;
 
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = activeImgData.current.width;
@@ -1587,14 +1542,13 @@
         });
 
 
-        // --- Export Functionality ---
         function updateQualityVisibility() {
             qualityContainer.style.display = (fileFormatSelect.value === 'image/png') ? 'none' : 'block';
             targetFileSizeInput.disabled = (fileFormatSelect.value === 'image/png');
 
         }
         fileFormatSelect.addEventListener('change', updateQualityVisibility);
-        qualitySlider.addEventListener('input', () => { // Corrected querySelector to direct ID
+        qualitySlider.addEventListener('input', () => {
              const qualitySpan = document.getElementById('qualityValue');
              if(qualitySpan) qualitySpan.textContent = qualitySlider.value;
         });
@@ -1616,7 +1570,7 @@
                 let currentQuality = exportQuality; 
                 let minQuality = 0.01; let maxQuality = 1.0; 
                 let bestBlob = null; let bestBlobSizeDiff = Infinity;
-                const MAX_ITERATIONS = 10; // Binary search for quality
+                const MAX_ITERATIONS = 10;
 
                 for (let i = 0; i < MAX_ITERATIONS; i++) { 
                     const dataUrl = exportCanvas.toDataURL(exportFormat, currentQuality); 
@@ -1624,7 +1578,7 @@
                     const currentSizeKB = tempBlob.size / 1024;
                     const diff = currentSizeKB - targetKB;
 
-                    if (Math.abs(diff) < bestBlobSizeDiff && currentSizeKB <= targetKB * 1.05) { // Prefer smaller or slightly over
+                    if (Math.abs(diff) < bestBlobSizeDiff && currentSizeKB <= targetKB * 1.05) {
                         bestBlob = tempBlob;
                         bestBlobSizeDiff = Math.abs(diff);
                     }
@@ -1728,7 +1682,6 @@
             showNotification(finalMessage, errorCount > 0 ? 'warning' : (successCount > 0 ? 'success': 'info'));
         });
         
-        // --- Window Resize Listener ---
         const debouncedRedraw = debounce(() => {
             if (activeImageIndex !== -1 && imageStore[activeImageIndex]) { 
                 drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters); 
