@@ -32,7 +32,7 @@
         }
         .crop-selection {
             position: absolute;
-            border: 2px dashed #3b82f6;
+            border: 2px dashed #3b82f6; /* blue-500 */
             box-sizing: border-box;
             cursor: move;
             z-index: 10;
@@ -41,7 +41,7 @@
             position: absolute;
             width: 10px;
             height: 10px;
-            background-color: #3b82f6;
+            background-color: #3b82f6; /* blue-500 */
             border: 1px solid white;
             border-radius: 50%;
             z-index: 20;
@@ -57,7 +57,7 @@
         
         .crop-grid-line {
             position: absolute;
-            background-color: rgba(0, 0, 0, 0.4);
+            background-color: rgba(0, 0, 0, 0.4); /* Darker, more visible grid lines */
         }
         .crop-grid-line.vertical { width: 1px; height: 100%; }
         .crop-grid-line.horizontal { height: 1px; width: 100%; }
@@ -70,60 +70,61 @@
         .tab-content.active { display: block; }
 
         .loader {
-             border: 4px solid #4b5563; 
-             border-top: 4px solid #60a5fa; 
-             border-radius: 50%;
-             width: 30px;
-             height: 30px;
-             animation: spin 1s linear infinite;
+            border: 4px solid #4b5563; /* gray-600 */
+            border-top: 4px solid #60a5fa; /* blue-400 */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         .control-panel::-webkit-scrollbar { width: 8px; }
-        .control-panel::-webkit-scrollbar-track { background: #374151; border-radius: 10px; } 
-        .control-panel::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; } 
-        .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; } 
+        .control-panel::-webkit-scrollbar-track { background: #374151; /* gray-700 */ border-radius: 10px; } 
+        .control-panel::-webkit-scrollbar-thumb { background: #6b7280; /* gray-500 */ border-radius: 10px; } 
+        .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; /* gray-400 */ } 
 
         input[type="number"], input[type="text"], select, input[type="range"], input[type="color"] {
-            background-color: #374151; 
-            color: #f3f4f6; 
-            border-color: #4b5563; 
+            background-color: #374151; /* gray-700 */
+            color: #f3f4f6; /* gray-100 */
+            border-color: #4b5563; /* gray-600 */
             padding: 0.5rem; /* Consistent padding */
         }
         input[type="number"]::placeholder, input[type="text"]::placeholder {
-            color: #9ca3af; 
+            color: #9ca3af; /* gray-400 */
         }
+        /* Ensure specificity for file input button colors */
         .file\:bg-blue-800 { background-color: #1e3a8a !important; }
         .file\:text-blue-300 { color: #93c5fd !important; }
-        .hover\:file\:bg-blue-700 { background-color: #1e40af !important; }
+        .hover\:file\:bg-blue-700:hover .file\:bg-blue-800 { background-color: #1e40af !important; } /* Check specificity for hover */
         
         #imageSelectorList button {
             display: block;
             width: 100%;
             text-align: left;
             padding: 8px 12px; 
-            border-bottom: 1px solid #4b5563; 
-            font-size: 0.875rem; 
+            border-bottom: 1px solid #4b5563; /* gray-600 */
+            font-size: 0.875rem; /* text-sm */
             transition: background-color 0.2s;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            border-radius: 4px; 
-            margin-bottom: 2px; 
+            border-radius: 4px; /* rounded-sm or rounded depending on desired curve */
+            margin-bottom: 2px; /* For spacing if needed */
         }
         #imageSelectorList button:last-child {
             border-bottom: none;
             margin-bottom: 0;
         }
         #imageSelectorList button:hover {
-            background-color: #4b5563; 
+            background-color: #4b5563; /* gray-600 */
         }
         #imageSelectorList button.active-image {
-            background-color: #2563eb; 
+            background-color: #2563eb; /* blue-600 */
             color: white;
-            font-weight: 600;
+            font-weight: 600; /* semibold */
         }
 
         .notification {
@@ -131,7 +132,7 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            color: white;
+            /* color should be set by type (success, error, etc.) */
             padding: 12px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -144,13 +145,15 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-        .notification.fade-out {
+        .notification.fade-out { /* Used for fade out before removal */
             opacity: 0;
             transform: translateX(-50%) translateY(20px);
         }
-        .notification.success { background-color: #10B981; /* green-500 */ }
-        .notification.error { background-color: #EF4444; /* red-500 */ }
-        .notification.warning { background-color: #F59E0B; /* amber-500 */ }
+        .notification.success { background-color: #10B981; /* green-500 */ color: white; }
+        .notification.error { background-color: #EF4444; /* red-500 */ color: white; }
+        .notification.warning { background-color: #F59E0B; /* amber-500 */ color: white; }
+        .notification.info { background-color: #3B82F6; /* blue-500 */ color: white; }
+
 
         /* Tooltip styles */
         [data-tooltip]:hover::after {
@@ -158,17 +161,17 @@
             position: absolute;
             bottom: 100%;
             left: 50%;
-            transform: translateX(-50%) translateY(-5px);
+            transform: translateX(-50%) translateY(-5px); /* Small gap */
             background-color: #1f2937; /* gray-800 */
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.75rem; /* text-xs */
             white-space: nowrap;
-            z-index: 100;
+            z-index: 100; /* Ensure tooltip is on top */
         }
         [data-tooltip] {
-            position: relative;
+            position: relative; /* Needed for absolute positioning of ::after */
         }
         .zoom-controls {
             position: absolute;
@@ -176,16 +179,16 @@
             right: 10px;
             display: flex;
             gap: 5px;
-            background-color: rgba(49, 49, 49, 0.7);
+            background-color: rgba(49, 49, 49, 0.7); /* Darker, semi-transparent */
             padding: 8px;
             border-radius: 8px;
-            z-index: 5;
+            z-index: 5; /* Above canvas, below crop selection if needed */
         }
         .zoom-controls button {
             background-color: #4b5563; /* gray-600 */
             color: white;
             border: none;
-            border-radius: 50%;
+            border-radius: 50%; /* Circular buttons */
             width: 30px;
             height: 30px;
             font-size: 16px;
@@ -201,7 +204,7 @@
             color: white;
             font-size: 14px;
             padding: 0 5px;
-            line-height: 30px;
+            line-height: 30px; /* Vertically center text with buttons */
         }
 
     </style>
@@ -383,9 +386,7 @@
             <p id="exportMessage" class="text-sm text-gray-400 mt-2"></p>
         </div>
         
-        <div class="flex-grow"></div> 
-
-        <div>
+        <div class="flex-grow"></div> <div>
             <div class="pt-4 border-t border-gray-700">
                 <h3 class="text-md font-semibold text-gray-300 mb-2">Active Image Info:</h3>
                 <p class="text-sm text-gray-400">Name: <span id="activeImageName">N/A</span></p>
@@ -484,7 +485,7 @@
         const fileFormatSelect = document.getElementById('fileFormat');
         const qualityContainer = document.getElementById('qualityContainer');
         const qualitySlider = document.getElementById('quality');
-        const qualityValue = document.getElementById('qualityValue');
+        const qualityValue = document.getElementById('qualityValue'); // Ensure this is the correct span ID
         const targetFileSizeInput = document.getElementById('targetFileSize');
         const downloadActiveButton = document.getElementById('downloadActiveButton');
         const downloadAllButton = document.getElementById('downloadAllButton');
@@ -504,7 +505,7 @@
         const ZOOM_STEP = 0.1;
 
         let isCropping = false;
-        let cropRect = { x: 0, y: 0, width: 0, height: 0, visualX: 0, visualY: 0, visualWidth: 0, visualHeight: 0 };
+        let cropRect = { x: 0, y: 0, width: 0, height: 0 }; // Values relative to unzoomed canvas client dimensions
         let cropSelectionDiv = null;
         let cropHandles = [];
         let cropGridLines = [];
@@ -517,12 +518,12 @@
         // Initialization
         disableAllControls(); 
         setupTabs(); 
-        updateQualityVisibility(); // Call this on load to set initial visibility based on default format
+        updateQualityVisibility(); 
 
         // --- Utility Functions ---
         function showNotification(message, type = 'success', duration = 3000) {
             const notification = document.createElement('div');
-            notification.className = `notification ${type} text-white`;
+            notification.className = `notification ${type}`; // type class handles color
             notification.textContent = message;
             notificationArea.appendChild(notification);
             void notification.offsetWidth; 
@@ -532,7 +533,7 @@
                 notification.classList.add('fade-out');
                 setTimeout(() => {
                     if (notification.parentNode) {
-                       notification.parentNode.removeChild(notification);
+                        notification.parentNode.removeChild(notification);
                     }
                 }, 500); 
             }, duration);
@@ -562,13 +563,11 @@
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
             
-            // Clear future history if we are not at the latest state
             if (activeImgData.historyPointer < activeImgData.history.length - 1) {
                 activeImgData.history = activeImgData.history.slice(0, activeImgData.historyPointer + 1);
             }
 
             const currentStateSrc = activeImgData.current.src;
-            // Avoid saving duplicate states
             if (activeImgData.history.length > 0 && activeImgData.history[activeImgData.history.length - 1] === currentStateSrc) {
                 return;
             }
@@ -576,7 +575,6 @@
             activeImgData.history.push(currentStateSrc);
             activeImgData.historyPointer = activeImgData.history.length - 1;
             undoButton.disabled = activeImgData.historyPointer <= 0;
-            // console.log(`State saved after ${operationName}. Pointer: ${activeImgData.historyPointer}, History size: ${activeImgData.history.length}`);
         }
 
         undoButton.addEventListener('click', () => {
@@ -589,7 +587,7 @@
                 const img = new Image();
                 img.onload = () => {
                     activeImgData.current = img;
-                    setActiveImage(activeImageIndex, false); // Don't save state on undo
+                    setActiveImage(activeImageIndex, false); 
                     showNotification('Undo successful.', 'success', 1500);
                 };
                 img.onerror = () => showNotification('Error loading previous state.', 'error');
@@ -598,7 +596,6 @@
             }
         });
         
-        // Keyboard shortcut for Undo
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
                 if (!undoButton.disabled) {
@@ -640,14 +637,12 @@
                     if (button.dataset.tab !== 'adjust' && isAddingText) {
                         cancelAddTextMode();
                     }
-                     // Reset temp filters when leaving adjust tab without applying
                     if (button.dataset.tab !== 'adjust') {
-                        resetTempAdjustmentFilters(false); // Don't redraw if not on adjust tab
+                        resetTempAdjustmentFilters(false); 
                     } else {
-                        // When entering adjust tab, ensure sliders reflect current image state (or temp if already fiddling)
                         if (activeImageIndex !== -1) {
-                            // This will draw with temp filters, which is fine.
-                           // drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+                             // Sliders already reflect tempFilters, draw to ensure canvas matches
+                            drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
                         }
                     }
                 });
@@ -727,13 +722,13 @@
                         originalImg.onload = () => {
                             const currentImg = new Image(); 
                             currentImg.onload = () => {
-                                const initialStateSrc = currentImg.src; // Save initial state for history
+                                const initialStateSrc = currentImg.src; 
                                 resolve({ 
                                     id: `img-${Date.now()}-${i}`, 
                                     original: originalImg, 
                                     current: currentImg, 
-                                    history: [initialStateSrc], // Initialize history with the first state
-                                    historyPointer: 0,         // Pointer to the current state in history
+                                    history: [initialStateSrc], 
+                                    historyPointer: 0,          
                                     name: file.name.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_'),
                                     ext: file.name.split('.').pop().toLowerCase(),
                                     originalFileSizeBytes: file.size
@@ -755,7 +750,7 @@
                 imageStore = await Promise.all(loadPromises);
                 populateImageSelector();
                 if (imageStore.length > 0) {
-                    setActiveImage(0, false); // Don't save state on initial load
+                    setActiveImage(0, false); 
                     loadedFileNameEl.textContent = files.length > 1 ? `${files.length} files loaded` : files[0].name;
                 } else {
                     canvasMessage.innerHTML = '<p>Upload image(s) to start editing.</p>';
@@ -771,11 +766,11 @@
 
         function populateImageSelector() {
             imageSelectorList.innerHTML = '';
-            if (imageStore.length > 1) { // Only show selector if more than one image
+            if (imageStore.length > 1) { 
                 imageStore.forEach((imgData, index) => {
                     const button = document.createElement('button');
                     button.textContent = `${imgData.name}.${imgData.ext}`;
-                    button.onclick = () => setActiveImage(index, false); // Don't save state on switch
+                    button.onclick = () => setActiveImage(index, false); 
                     imageSelectorList.appendChild(button);
                 });
                 imageSelectorContainer.classList.remove('hidden');
@@ -784,7 +779,7 @@
             }
         }
 
-        function setActiveImage(index, shouldSaveState = true) {
+        function setActiveImage(index, shouldSaveState = true) { // Default to true, but often overridden
             if (index < 0 || index >= imageStore.length) return;
             
             if (isCropping) cancelCropMode(); 
@@ -797,25 +792,23 @@
             });
             
             const activeImgData = imageStore[activeImageIndex];
-            if (imageStore.length === 1) { // If only one image, update loadedFileNameEl
-                 loadedFileNameEl.textContent = `${activeImgData.name}.${activeImgData.ext}`;
+            if (imageStore.length === 1) { 
+                loadedFileNameEl.textContent = `${activeImgData.name}.${activeImgData.ext}`;
             }
 
-            resetTempAdjustmentFilters(false); // Reset temp filters, don't redraw yet
-            drawImageToCanvasWithFilters(activeImgData.current, tempFilters); // Draw with (now reset) temp filters
+            resetTempAdjustmentFilters(false); 
+            drawImageToCanvasWithFilters(activeImgData.current, tempFilters); 
             updateDimensionDisplaysForActive();
             resetResizeControlsForActive();
-            resetAdjustmentControls(); // Reset sliders to current image's (or default) state
+            resetAdjustmentControls(); 
             fileNameInput.value = `${activeImgData.name}_edited`; 
             enableAllControls(); 
             canvasMessage.classList.add('hidden');
-            currentZoomLevel = 1.0; // Reset zoom on image switch
-            applyZoom();
+            currentZoomLevel = 1.0; 
+            applyZoom(); // This will redraw with new zoom and update display
 
-            if (shouldSaveState) {
-                // This is tricky. Switching images shouldn't necessarily be a "state save"
-                // unless an operation was just performed. For now, let operations handle saveState.
-            }
+            // Save state is typically handled by the operation causing the change, not by switching.
+            // if (shouldSaveState) { saveState("Set Active Image"); }
             undoButton.disabled = activeImgData.historyPointer <= 0;
         }
         
@@ -825,7 +818,9 @@
                 ctx.clearRect(0,0,imageCanvas.width, imageCanvas.height);
                 canvasMessage.classList.remove('hidden');
                 canvasMessage.innerHTML = '<p>No image selected or loaded.</p>';
-                imageCanvas.style.transform = `scale(1)`;
+                imageCanvas.style.transform = `scale(1)`; // Reset transform
+                imageCanvas.style.width = 'auto';
+                imageCanvas.style.height = 'auto';
                 return;
             }
             canvasMessage.classList.add('hidden');
@@ -839,7 +834,6 @@
             let baseDrawHeight = imageToDraw.height;
             const imageAspectRatio = baseDrawWidth / baseDrawHeight;
             
-            // Calculate dimensions to fit within container (pre-zoom)
             let displayWidth, displayHeight;
             if (containerWidth / containerHeight > imageAspectRatio) {
                 displayHeight = containerHeight;
@@ -849,19 +843,17 @@
                 displayHeight = displayWidth / imageAspectRatio;
             }
             
-            imageCanvas.width = Math.round(baseDrawWidth); // Canvas internal resolution
+            imageCanvas.width = Math.round(baseDrawWidth); 
             imageCanvas.height = Math.round(baseDrawHeight);
 
-            // Apply CSS transform for zoom to the canvas element itself
             imageCanvas.style.width = `${Math.round(displayWidth)}px`;
             imageCanvas.style.height = `${Math.round(displayHeight)}px`;
-            imageCanvas.style.transformOrigin = 'center center'; // Zoom from center
+            imageCanvas.style.transformOrigin = 'center center'; 
             imageCanvas.style.transform = `scale(${zoom})`;
 
 
             ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
 
-            // Apply filters if any
             let filterString = '';
             if (filters) {
                 if (filters.brightness !== 100) filterString += `brightness(${filters.brightness}%) `;
@@ -871,7 +863,7 @@
             }
             ctx.filter = filterString.trim();
             ctx.drawImage(imageToDraw, 0, 0, imageCanvas.width, imageCanvas.height);
-            ctx.filter = 'none'; // Reset filter for other canvas operations
+            ctx.filter = 'none'; 
         }
 
         function drawImageToCanvasWithFilters(imageToDraw, filtersToApply) {
@@ -895,11 +887,11 @@
 
         // --- Zoom Functionality ---
         zoomInBtn.addEventListener('click', () => {
-            currentZoomLevel = Math.min(3.0, currentZoomLevel + ZOOM_STEP); // Max zoom 300%
+            currentZoomLevel = Math.min(3.0, currentZoomLevel + ZOOM_STEP); 
             applyZoom();
         });
         zoomOutBtn.addEventListener('click', () => {
-            currentZoomLevel = Math.max(0.1, currentZoomLevel - ZOOM_STEP); // Min zoom 10%
+            currentZoomLevel = Math.max(0.1, currentZoomLevel - ZOOM_STEP); 
             applyZoom();
         });
         zoomResetBtn.addEventListener('click', () => {
@@ -912,11 +904,7 @@
                 drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
             }
             zoomLevelDisplay.textContent = `${Math.round(currentZoomLevel * 100)}%`;
-            // If cropping, need to readjust visual crop selection
             if (isCropping && cropSelectionDiv) {
-                // This is complex, as cropRect is relative to unzoomed canvas.
-                // For simplicity, might need to cancel crop on zoom or re-init.
-                // For now, just redraw. User might need to readjust crop.
                 updateCropSelectionVisuals();
             }
         }
@@ -929,10 +917,10 @@
             const newCurrentImage = new Image();
             newCurrentImage.onload = () => {
                 activeImgData.current = newCurrentImage; 
-                activeImgData.history = [newCurrentImage.src]; // Reset history
+                activeImgData.history = [newCurrentImage.src]; 
                 activeImgData.historyPointer = 0;
-                setActiveImage(activeImageIndex, false); // Don't save state on reset
-                resetTempAdjustmentFilters(); // Also reset any live filter previews
+                setActiveImage(activeImageIndex, false); 
+                resetTempAdjustmentFilters(); 
                 showNotification(`"${activeImgData.name}.${activeImgData.ext}" reset to original.`);
             };
             newCurrentImage.onerror = () => showNotification('Error loading original image for reset.', 'error');
@@ -994,26 +982,23 @@
         function updatePercentSliderFromDimensions(w, h) {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImg = imageStore[activeImageIndex].current;
-            if (activeImg.width === 0 || activeImg.height === 0) return; // Avoid division by zero
+            if (activeImg.width === 0 || activeImg.height === 0) return; 
             const percentW = (w / activeImg.width) * 100;
             const percentH = (h / activeImg.height) * 100;
-            // If aspect lock is on, percentW and percentH should be very close.
-            // If not, it's harder to define a single "percent". Let's use width's percent.
             const representativePercent = aspectLock.checked ? Math.round((percentW + percentH) / 2) : Math.round(percentW);
-            resizePercent.value = representativePercent > 0 ? representativePercent : 1;
+            resizePercent.value = representativePercent > 0 ? Math.min(representativePercent, 200) : 1; // Cap at max
             resizePercentValue.textContent = resizePercent.value;
         }
 
         applyResizeBtn.addEventListener('click', async () => {
             if (activeImageIndex === -1) return;
-            applyResizeBtn.disabled = true; // Prevent double clicks
+            applyResizeBtn.disabled = true; 
 
             const activeImgData = imageStore[activeImageIndex];
             let newW, newH;
             const originalCurrentWidth = activeImgData.current.width;
             const originalCurrentHeight = activeImgData.current.height;
 
-            // Prioritize percent slider if it was the last thing changed and dimensions match original current
             const currentPercentVal = parseInt(resizePercent.value);
             const currentWVal = parseInt(resizeWidthInput.value);
             const currentHVal = parseInt(resizeHeightInput.value);
@@ -1027,14 +1012,11 @@
                 newH = currentHVal;
                 if (aspectLock.checked) {
                     const currentAspectRatio = originalCurrentWidth / originalCurrentHeight;
-                    // Check which input was likely changed by user if aspect lock is on
-                    if (newW !== originalCurrentWidth && resizeWidthInput.value !== String(originalCurrentWidth)) { // Width was changed
+                    if (newW !== originalCurrentWidth && resizeWidthInput.value !== String(originalCurrentWidth)) { 
                         newH = Math.round(newW / currentAspectRatio);
-                    } else if (newH !== originalCurrentHeight && resizeHeightInput.value !== String(originalCurrentHeight)) { // Height was changed
+                    } else if (newH !== originalCurrentHeight && resizeHeightInput.value !== String(originalCurrentHeight)) { 
                         newW = Math.round(newH * currentAspectRatio);
                     }
-                    // If both are different, it implies percent slider or both were manually set,
-                    // but aspect lock should enforce ratio based on one. Let's assume width is primary if both changed.
                     else if (newW !== originalCurrentWidth && newH !== originalCurrentHeight) {
                          newH = Math.round(newW / currentAspectRatio);
                     }
@@ -1064,11 +1046,11 @@
                 console.error("Error resizing image:", error);
                 showNotification(`Error resizing: ${error.message}`, 'error');
             } finally {
-                if (activeImageIndex !== -1) applyResizeBtn.disabled = false; // Re-enable if an image is still active
+                if (activeImageIndex !== -1) applyResizeBtn.disabled = false; 
             }
         });
 
-        // --- Crop Functionality (largely from user's existing code, with minor adjustments) ---
+        // --- Crop Functionality ---
         startCropBtn.addEventListener('click', () => {
             if (activeImageIndex === -1) {
                 showNotification("Please select an image to crop.", "warning");
@@ -1107,10 +1089,11 @@
                 isCropping = false; startCropBtn.disabled = (activeImageIndex === -1);
                 return;
             }
-            const displayedCanvasWidth = imageCanvas.clientWidth; // Use clientWidth for visual size
-            const displayedCanvasHeight = imageCanvas.clientHeight;
+            // Use unzoomed client dimensions for initial cropRect definition
+            const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
+            const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
 
-            if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) {
+            if (unzoomedCanvasClientWidth === 0 || unzoomedCanvasClientHeight === 0) {
                 console.warn("Crop init: Image canvas has no visual dimensions. Aborting crop initialization.");
                 showNotification("Please ensure an image is fully displayed before cropping.", "warning");
                 isCropping = false; startCropBtn.disabled = (activeImageIndex === -1);
@@ -1121,15 +1104,15 @@
             cropSelectionDiv = document.createElement('div');
             cropSelectionDiv.className = 'crop-selection';
             
-            localCanvasHost.appendChild(cropSelectionDiv); // Append to canvasHost for positioning relative to it
+            localCanvasHost.appendChild(cropSelectionDiv);
 
-            const initialWidth = displayedCanvasWidth * 0.8;
-            const initialHeight = displayedCanvasHeight * 0.8;
-            const initialX = (displayedCanvasWidth - initialWidth) / 2;
-            const initialY = (displayedCanvasHeight - initialHeight) / 2;
+            // cropRect values are relative to the UNZOOMED canvas client area
+            const initialWidthUnzoomed = unzoomedCanvasClientWidth * 0.8;
+            const initialHeightUnzoomed = unzoomedCanvasClientHeight * 0.8;
+            const initialXUnzoomed = (unzoomedCanvasClientWidth - initialWidthUnzoomed) / 2;
+            const initialYUnzoomed = (unzoomedCanvasClientHeight - initialHeightUnzoomed) / 2;
             
-            // cropRect stores dimensions relative to the *displayed* canvas, not the host
-            cropRect = { x: initialX, y: initialY, width: initialWidth, height: initialHeight };
+            cropRect = { x: initialXUnzoomed, y: initialYUnzoomed, width: initialWidthUnzoomed, height: initialHeightUnzoomed };
             updateCropSelectionVisuals(); 
             
             if(cropSelectionDiv) {
@@ -1156,88 +1139,104 @@
         }
 
         function updateCropSelectionVisuals() {
-            if (!cropSelectionDiv || !isCropping || activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
+            if (!cropSelectionDiv || !isCropping || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
-            
-            // Get canvas position relative to its offsetParent (canvasHost)
-            const canvasOffsetX = imageCanvas.offsetLeft;
-            const canvasOffsetY = imageCanvas.offsetTop;
 
-            // Position crop selection div relative to canvasHost, but aligned with the displayed canvas
-            cropSelectionDiv.style.left = `${canvasOffsetX + cropRect.x}px`;
-            cropSelectionDiv.style.top = `${canvasOffsetY + cropRect.y}px`;
-            cropSelectionDiv.style.width = `${cropRect.width}px`;
-            cropSelectionDiv.style.height = `${cropRect.height}px`;
+            const localCanvasHost = document.getElementById('canvasHost');
+            if (!localCanvasHost) { console.error("updateCropSelectionVisuals: canvasHost is null!"); return; }
 
-            // Calculate actual crop dimensions based on original image resolution
-            const displayedCanvasWidth = imageCanvas.clientWidth;
-            const displayedCanvasHeight = imageCanvas.clientHeight;
-            const scaleFactorX = displayedCanvasWidth > 0 ? activeImgData.current.width / displayedCanvasWidth : 1;
-            const scaleFactorY = displayedCanvasHeight > 0 ? activeImgData.current.height / displayedCanvasHeight : 1;
+            const canvasHostRect = localCanvasHost.getBoundingClientRect();
+            const imageCanvasRect = imageCanvas.getBoundingClientRect(); // Rect of the SCALED canvas element
+
+            // Top-left of the SCALED canvas element, relative to canvasHost
+            const visualCanvasLeftInHost = imageCanvasRect.left - canvasHostRect.left;
+            const visualCanvasTopInHost = imageCanvasRect.top - canvasHostRect.top;
+
+            // cropRect.x, .y, .width, .height are defined relative to the UNZOOMED canvas client dimensions.
+            // Scale these values by currentZoomLevel for positioning and sizing the cropSelectionDiv over the ZOOMED canvas.
+            cropSelectionDiv.style.left = `${visualCanvasLeftInHost + (cropRect.x * currentZoomLevel)}px`;
+            cropSelectionDiv.style.top = `${visualCanvasTopInHost + (cropRect.y * currentZoomLevel)}px`;
+            cropSelectionDiv.style.width = `${cropRect.width * currentZoomLevel}px`;
+            cropSelectionDiv.style.height = `${cropRect.height * currentZoomLevel}px`;
+
+            // Update crop dimension display (these are actual image pixels)
+            const unzoomedCanvasClientWidth = imageCanvas.clientWidth;  // Unzoomed client width
+            const unzoomedCanvasClientHeight = imageCanvas.clientHeight; // Unzoomed client height
             
-            cropWidthEl.value = Math.round(cropRect.width * scaleFactorX); 
-            cropHeightEl.value = Math.round(cropRect.height * scaleFactorY);
-            
-             const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
-            if (cropHandles.length === 0) {
-                handlePositions.forEach(pos => {
-                    const handle = document.createElement('div');
-                    handle.className = `crop-handle ${pos}`;
-                    handle.dataset.type = pos;
-                    cropSelectionDiv.appendChild(handle); 
-                    cropHandles.push(handle);
-                    handle.addEventListener('mousedown', onCropMouseDown);
-                });
+            if (unzoomedCanvasClientWidth > 0 && unzoomedCanvasClientHeight > 0) {
+                const scaleFactorX = activeImgData.current.width / unzoomedCanvasClientWidth;
+                const scaleFactorY = activeImgData.current.height / unzoomedCanvasClientHeight;
+                cropWidthEl.value = Math.round(cropRect.width * scaleFactorX); 
+                cropHeightEl.value = Math.round(cropRect.height * scaleFactorY);
+            } else {
+                cropWidthEl.value = 0;
+                cropHeightEl.value = 0;
             }
-            if (cropGridLines.length === 0 && cropSelectionDiv) { 
-                for (let i = 1; i < 3; i++) { 
-                    const vLine = document.createElement('div');
-                    vLine.className = 'crop-grid-line vertical';
-                    vLine.style.left = `${(100/3) * i}%`;
-                    cropSelectionDiv.appendChild(vLine);
-                    cropGridLines.push(vLine);
-                    const hLine = document.createElement('div');
-                    hLine.className = 'crop-grid-line horizontal';
-                    hLine.style.top = `${(100/3) * i}%`;
-                    cropSelectionDiv.appendChild(hLine);
-                    cropGridLines.push(hLine);
+            
+            // Handles and grid lines are children of cropSelectionDiv. Their % positioning works relative to it.
+            // Create them only if they don't exist and cropSelectionDiv is present.
+            if (cropSelectionDiv) {
+                if (cropHandles.length === 0) {
+                    const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
+                    handlePositions.forEach(pos => {
+                        const handle = document.createElement('div');
+                        handle.className = `crop-handle ${pos}`;
+                        handle.dataset.type = pos;
+                        cropSelectionDiv.appendChild(handle); 
+                        cropHandles.push(handle);
+                        handle.addEventListener('mousedown', onCropMouseDown);
+                    });
+                }
+                if (cropGridLines.length === 0) { 
+                    for (let i = 1; i < 3; i++) { 
+                        const vLine = document.createElement('div');
+                        vLine.className = 'crop-grid-line vertical';
+                        vLine.style.left = `${(100/3) * i}%`;
+                        cropSelectionDiv.appendChild(vLine);
+                        cropGridLines.push(vLine);
+                        const hLine = document.createElement('div');
+                        hLine.className = 'crop-grid-line horizontal';
+                        hLine.style.top = `${(100/3) * i}%`;
+                        cropSelectionDiv.appendChild(hLine);
+                        cropGridLines.push(hLine);
+                    }
                 }
             }
         }
         
         aspectRatioSelect.addEventListener('change', () => {
             if (!isCropping || !cropSelectionDiv || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
-            const activeImgData = imageStore[activeImageIndex].current; // Use current image for aspect ratio
+            const activeImg = imageStore[activeImageIndex].current; 
             const selectedRatio = aspectRatioSelect.value;
             if (selectedRatio === 'freeform') return;
 
-            const displayedCanvasWidth = imageCanvas.clientWidth;
-            const displayedCanvasHeight = imageCanvas.clientHeight;
+            // Use UNZOOMED client dimensions for aspect ratio calculations of cropRect
+            const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
+            const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
 
-            let ratio;
+            let ratioValue;
             if (selectedRatio === 'original') {
-                ratio = activeImgData.width / activeImgData.height; 
+                ratioValue = activeImg.width / activeImg.height; 
             } else {
                 const parts = selectedRatio.split(':').map(Number);
-                ratio = parts[0] / parts[1];
+                ratioValue = parts[0] / parts[1];
             }
             
-            let newVisualWidth = cropRect.width; 
-            let newVisualHeight = newVisualWidth / ratio;
+            // cropRect is in unzoomed coordinates.
+            let newUnzoomedWidth = cropRect.width; 
+            let newUnzoomedHeight = newUnzoomedWidth / ratioValue;
 
-            // Adjust if new height exceeds canvas bounds
-            if (cropRect.y + newVisualHeight > displayedCanvasHeight) { 
-                newVisualHeight = displayedCanvasHeight - cropRect.y;
-                newVisualWidth = newVisualHeight * ratio; 
+            if (cropRect.y + newUnzoomedHeight > unzoomedCanvasClientHeight) { 
+                newUnzoomedHeight = unzoomedCanvasClientHeight - cropRect.y;
+                newUnzoomedWidth = newUnzoomedHeight * ratioValue; 
             }
-            // Adjust if new width exceeds canvas bounds (can happen after height adjustment)
-            if (cropRect.x + newVisualWidth > displayedCanvasWidth) {
-                newVisualWidth = displayedCanvasWidth - cropRect.x;
-                newVisualHeight = newVisualWidth / ratio;
+            if (cropRect.x + newUnzoomedWidth > unzoomedCanvasClientWidth) {
+                newUnzoomedWidth = unzoomedCanvasClientWidth - cropRect.x;
+                newUnzoomedHeight = newUnzoomedWidth / ratioValue;
             }
             
-            cropRect.width = Math.max(20, newVisualWidth); // Min size
-            cropRect.height = Math.max(20, newVisualHeight); // Min size
+            cropRect.width = Math.max(20, newUnzoomedWidth); 
+            cropRect.height = Math.max(20, newUnzoomedHeight); 
             updateCropSelectionVisuals();
         });
 
@@ -1251,45 +1250,43 @@
             dragInfo.target = e.target.classList.contains('crop-handle') ? e.target.dataset.type : 'selection';
             
             const hostBoundingRect = localCanvasHost.getBoundingClientRect();
-            // Mouse position relative to canvasHost
             dragInfo.startX = e.clientX - hostBoundingRect.left;
             dragInfo.startY = e.clientY - hostBoundingRect.top;
             
-            // Store original cropRect values (which are relative to the displayed canvas, not canvasHost)
             dragInfo.originalRect = { ...cropRect }; 
         }
 
         function onCropMouseMove(e) {
             if (!isCropping || !dragInfo.active || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
-            const activeImgData = imageStore[activeImageIndex];
+            const activeImgData = imageStore[activeImageIndex]; // Renamed from activeImgData
             const localCanvasHost = document.getElementById('canvasHost');
             if (!localCanvasHost) { console.error("onCropMouseMove: canvasHost not found!"); return; }
 
             e.preventDefault(); e.stopPropagation();
             
             const hostBoundingRect = localCanvasHost.getBoundingClientRect();
-            const canvasBoundingRect = imageCanvas.getBoundingClientRect(); // For boundary checks
-
-            // Current mouse position relative to canvasHost
+            
             const mouseXOnHost = e.clientX - hostBoundingRect.left;
             const mouseYOnHost = e.clientY - hostBoundingRect.top;
 
-            // Delta mouse movement relative to canvasHost
-            const deltaX = mouseXOnHost - dragInfo.startX;
-            const deltaY = mouseYOnHost - dragInfo.startY;
+            // Delta mouse movement in screen pixels
+            const deltaX_screen = mouseXOnHost - dragInfo.startX;
+            const deltaY_screen = mouseYOnHost - dragInfo.startY;
+
+            // Scale deltas to unzoomed canvas coordinates for cropRect modification
+            const deltaX = deltaX_screen / currentZoomLevel;
+            const deltaY = deltaY_screen / currentZoomLevel;
             
             let newX = dragInfo.originalRect.x;
             let newY = dragInfo.originalRect.y;
             let newWidth = dragInfo.originalRect.width;
             let newHeight = dragInfo.originalRect.height;
-            const minSize = 20; 
+            const minSize = 20 / currentZoomLevel; // Min size in unzoomed coords
 
-            // All calculations for newX, newY, newWidth, newHeight are relative to the *displayed canvas*
             if (dragInfo.target === 'selection') {
                 newX = dragInfo.originalRect.x + deltaX;
                 newY = dragInfo.originalRect.y + deltaY;
             } else { 
-                // Handle resize from edges/corners
                 if (dragInfo.target.includes('w')) { newX = dragInfo.originalRect.x + deltaX; newWidth = dragInfo.originalRect.width - deltaX; }
                 if (dragInfo.target.includes('e')) { newWidth = dragInfo.originalRect.width + deltaX; }
                 if (dragInfo.target.includes('n')) { newY = dragInfo.originalRect.y + deltaY; newHeight = dragInfo.originalRect.height - deltaY; }
@@ -1305,44 +1302,40 @@
                         targetAspectRatio = parts[0] / parts[1];
                     }
 
+                    // Adjust based on which dimension was primarily changed by the handle
                     if (dragInfo.target.includes('w') || dragInfo.target.includes('e')) { 
                         const adjustedHeight = newWidth / targetAspectRatio;
-                        if (dragInfo.target.includes('n')) newY += newHeight - adjustedHeight; // Adjust Y if resizing from top-corner
+                        if (dragInfo.target.includes('n')) newY += newHeight - adjustedHeight; 
                         newHeight = adjustedHeight;
                     } else if (dragInfo.target.includes('n') || dragInfo.target.includes('s')) { 
                         const adjustedWidth = newHeight * targetAspectRatio;
-                         if (dragInfo.target.includes('w')) newX += newWidth - adjustedWidth; // Adjust X if resizing from left-corner
+                         if (dragInfo.target.includes('w')) newX += newWidth - adjustedWidth; 
                         newWidth = adjustedWidth;
-                    } else { // Corner resize, prioritize width change then adjust height
+                    } else { // Corner resize, typically width leads, height adjusts
                         const tempNewHeight = newWidth / targetAspectRatio;
-                        if ((dragInfo.target === 'nw' || dragInfo.target === 'sw') && newHeight !== tempNewHeight) {
-                           // If dragging a W corner, X changes, width changes. Height needs to adjust.
-                           // If N or S is also part of handle, Y might need to shift to maintain aspect.
-                           if (dragInfo.target.includes('n')) newY += newHeight - tempNewHeight;
-                        }
+                        // If Y position is also changing due to N/S part of handle, adjust Y
+                        if (dragInfo.target.includes('n')) newY = (dragInfo.originalRect.y + dragInfo.originalRect.height) - tempNewHeight;
+                        // else if (dragInfo.target.includes('s')) { /* Y is fine */ }
                         newHeight = tempNewHeight;
                     }
                 }
             }
-            // Ensure minimum size
             if (newWidth < minSize) { 
-                if (dragInfo.target.includes('w')) newX = cropRect.x + cropRect.width - minSize; 
+                if (dragInfo.target.includes('w')) newX = (dragInfo.originalRect.x + dragInfo.originalRect.width) - minSize; 
                 newWidth = minSize; 
             }
             if (newHeight < minSize) { 
-                if (dragInfo.target.includes('n')) newY = cropRect.y + cropRect.height - minSize; 
+                if (dragInfo.target.includes('n')) newY = (dragInfo.originalRect.y + dragInfo.originalRect.height) - minSize; 
                 newHeight = minSize; 
             }
 
-            // Boundary checks against the displayed canvas dimensions
-            const displayedCanvasWidth = imageCanvas.clientWidth;
-            const displayedCanvasHeight = imageCanvas.clientHeight;
+            const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
+            const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
 
-            newX = Math.max(0, Math.min(newX, displayedCanvasWidth - newWidth));
-            newY = Math.max(0, Math.min(newY, displayedCanvasHeight - newHeight));
-            // Width/height might need re-clamping if X/Y were clamped
-            newWidth = Math.min(newWidth, displayedCanvasWidth - newX);
-            newHeight = Math.min(newHeight, displayedCanvasHeight - newY);
+            newX = Math.max(0, Math.min(newX, unzoomedCanvasClientWidth - newWidth));
+            newY = Math.max(0, Math.min(newY, unzoomedCanvasClientHeight - newHeight));
+            newWidth = Math.min(newWidth, unzoomedCanvasClientWidth - newX); // Re-clamp width/height
+            newHeight = Math.min(newHeight, unzoomedCanvasClientHeight - newY);
 
             cropRect.x = newX; cropRect.y = newY; cropRect.width = newWidth; cropRect.height = newHeight;
             updateCropSelectionVisuals();
@@ -1357,24 +1350,30 @@
             if (activeImageIndex === -1 || !isCropping || !cropSelectionDiv || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
 
-            const displayedCanvasWidth = imageCanvas.clientWidth;
-            const displayedCanvasHeight = imageCanvas.clientHeight;
+            // cropRect is in unzoomed canvas client coordinates.
+            // Scale these to actual image pixel coordinates for cropping the source image.
+            const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
+            const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
 
-            // Scale cropRect (which is relative to displayed canvas) to actual image dimensions
-            const scaleX = activeImgData.current.width / displayedCanvasWidth;
-            const scaleY = activeImgData.current.height / displayedCanvasHeight;
+            if (unzoomedCanvasClientWidth === 0 || unzoomedCanvasClientHeight === 0) {
+                showNotification('Error: Canvas display area is zero. Cannot crop.', 'error');
+                return;
+            }
             
-            const sx = cropRect.x * scaleX;
-            const sy = cropRect.y * scaleY;
-            const sWidth = cropRect.width * scaleX;
-            const sHeight = cropRect.height * scaleY;
+            const scaleXToImage = activeImgData.current.width / unzoomedCanvasClientWidth;
+            const scaleYToImage = activeImgData.current.height / unzoomedCanvasClientHeight;
+            
+            const sx = cropRect.x * scaleXToImage;
+            const sy = cropRect.y * scaleYToImage;
+            const sWidth = cropRect.width * scaleXToImage;
+            const sHeight = cropRect.height * scaleYToImage;
 
             if (sWidth <= 0 || sHeight <= 0) {
                 showNotification('Error: Invalid crop area. Dimensions are too small.', 'error');
                 return;
             }
             const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = Math.round(sWidth); // Ensure integer dimensions
+            tempCanvas.width = Math.round(sWidth); 
             tempCanvas.height = Math.round(sHeight);
             const tempCtx = tempCanvas.getContext('2d');
             tempCtx.drawImage(activeImgData.current, sx, sy, sWidth, sHeight, 0, 0, tempCanvas.width, tempCanvas.height);
@@ -1398,15 +1397,14 @@
             saturationSlider.value = 100; saturationValue.textContent = '100';
             grayscaleSlider.value = 0; grayscaleValue.textContent = '0';
             textOverlayInput.value = '';
-            // Reset tempFilters to defaults
             tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
         }
         
         function resetTempAdjustmentFilters(shouldRedraw = true) {
              tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
-             resetAdjustmentControls(); // Also reset sliders to default
+             resetAdjustmentControls(); 
              if (shouldRedraw && activeImageIndex !== -1 && imageStore[activeImageIndex]) {
-                drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+                 drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
              }
         }
 
@@ -1429,8 +1427,8 @@
         
         resetAdjustmentsBtn.addEventListener('click', () => {
             if (activeImageIndex === -1) return;
-            resetTempAdjustmentFilters(); // This will reset sliders and redraw with no filters
-            showNotification('Adjustments preview reset.', 'success', 1500);
+            resetTempAdjustmentFilters(); 
+            showNotification('Adjustments preview reset.', 'info', 1500);
         });
 
         applyAdjustmentsBtn.addEventListener('click', () => {
@@ -1450,14 +1448,14 @@
             
             tempCtx.filter = filterString.trim();
             tempCtx.drawImage(activeImgData.current, 0, 0);
-            tempCtx.filter = 'none'; // Important to reset
+            tempCtx.filter = 'none'; 
 
             const newAdjustedImage = new Image();
             newAdjustedImage.onload = () => {
                 activeImgData.current = newAdjustedImage;
                 saveState("Adjustments Applied");
-                setActiveImage(activeImageIndex); // This will redraw with the new current image
-                resetTempAdjustmentFilters(false); // Reset temp filters for next use, don't redraw again
+                setActiveImage(activeImageIndex); 
+                resetTempAdjustmentFilters(false); 
                 showNotification('Adjustments applied successfully!', 'success');
             };
             newAdjustedImage.onerror = () => showNotification('Error applying adjustments.', 'error');
@@ -1522,13 +1520,12 @@
             isAddingText = true;
             imageCanvas.style.cursor = 'text';
             showNotification('Click on the image to place the text.', 'info');
-            // Disable other interactions temporarily
             startCropBtn.disabled = true;
         });
 
         function cancelAddTextMode() {
             isAddingText = false;
-            imageCanvas.style.cursor = 'grab'; // Or whatever the default is
+            imageCanvas.style.cursor = 'grab'; 
             if (activeImageIndex !== -1) startCropBtn.disabled = false;
         }
         
@@ -1547,28 +1544,33 @@
                 return;
             }
 
-            const rect = imageCanvas.getBoundingClientRect();
-            // Click coordinates relative to the *displayed* canvas
-            const xOnDisplayedCanvas = e.clientX - rect.left;
-            const yOnDisplayedCanvas = e.clientY - rect.top;
+            const rect = imageCanvas.getBoundingClientRect(); // Of the scaled canvas
+            const xOnScaledCanvas = e.clientX - rect.left;
+            const yOnScaledCanvas = e.clientY - rect.top;
 
-            // Scale these coordinates to the *actual* image resolution
-            const scaleX = activeImgData.current.width / imageCanvas.clientWidth;
-            const scaleY = activeImgData.current.height / imageCanvas.clientHeight;
-            const xOnActualImage = xOnDisplayedCanvas * scaleX;
-            const yOnActualImage = yOnDisplayedCanvas * scaleY;
-            const scaledSize = size * scaleX; // Scale font size too
+            // Convert click on scaled canvas to point on original image resolution
+            // Scale factor from unzoomed client canvas to original image
+            const scaleClientToImageX = activeImgData.current.width / imageCanvas.clientWidth;
+            const scaleClientToImageY = activeImgData.current.height / imageCanvas.clientHeight;
+
+            // Convert click on scaled canvas to click on unzoomed client canvas
+            const xOnUnzoomedClient = xOnScaledCanvas / currentZoomLevel;
+            const yOnUnzoomedClient = yOnScaledCanvas / currentZoomLevel;
+            
+            const xOnActualImage = xOnUnzoomedClient * scaleClientToImageX;
+            const yOnActualImage = yOnUnzoomedClient * scaleClientToImageY;
+            const scaledSizeOnImage = size * scaleClientToImageX; // Scale font size based on width scale
 
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = activeImgData.current.width;
             tempCanvas.height = activeImgData.current.height;
             const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(activeImgData.current, 0, 0); // Draw current image
+            tempCtx.drawImage(activeImgData.current, 0, 0); 
             
             tempCtx.fillStyle = color;
-            tempCtx.font = `${scaledSize}px ${font}`;
-            tempCtx.textAlign = 'left'; // Or center, depending on desired placement relative to click
-            tempCtx.textBaseline = 'top'; // Or middle
+            tempCtx.font = `${scaledSizeOnImage}px ${font}`;
+            tempCtx.textAlign = 'left'; 
+            tempCtx.textBaseline = 'top'; 
             tempCtx.fillText(text, xOnActualImage, yOnActualImage);
 
             const newImageWithText = new Image();
@@ -1588,16 +1590,19 @@
         // --- Export Functionality ---
         function updateQualityVisibility() {
             qualityContainer.style.display = (fileFormatSelect.value === 'image/png') ? 'none' : 'block';
+            targetFileSizeInput.disabled = (fileFormatSelect.value === 'image/png');
+
         }
         fileFormatSelect.addEventListener('change', updateQualityVisibility);
-        qualitySlider.addEventListener('input', () => qualityValue.textContent = qualitySlider.value);
+        qualitySlider.addEventListener('input', () => { // Corrected querySelector to direct ID
+             const qualitySpan = document.getElementById('qualityValue');
+             if(qualitySpan) qualitySpan.textContent = qualitySlider.value;
+        });
+
 
         async function exportSingleImage(imgData, baseFilename, exportFormat, exportQuality, targetKB) { 
-            // Determine the correct file extension
             let fileExtension = exportFormat.split('/')[1];
-            if (exportFormat === 'image/jpeg') {
-                fileExtension = 'jpg'; // Ensure .jpg for JPEG images
-            }
+            if (exportFormat === 'image/jpeg') fileExtension = 'jpg';
             const finalFileName = `${baseFilename}.${fileExtension}`;
 
             const exportCanvas = document.createElement('canvas');
@@ -1609,9 +1614,9 @@
             let blob;
             if (!isNaN(targetKB) && targetKB > 0 && (exportFormat === 'image/jpeg' || exportFormat === 'image/webp')) {
                 let currentQuality = exportQuality; 
-                let minQuality = 0.01; let maxQuality = 1.0; // Ensure minQuality is very low
+                let minQuality = 0.01; let maxQuality = 1.0; 
                 let bestBlob = null; let bestBlobSizeDiff = Infinity;
-                const MAX_ITERATIONS = 10;
+                const MAX_ITERATIONS = 10; // Binary search for quality
 
                 for (let i = 0; i < MAX_ITERATIONS; i++) { 
                     const dataUrl = exportCanvas.toDataURL(exportFormat, currentQuality); 
@@ -1619,32 +1624,31 @@
                     const currentSizeKB = tempBlob.size / 1024;
                     const diff = currentSizeKB - targetKB;
 
-                    // If we are within 5% or very close, and smaller, it's a good candidate
-                    if (diff <= 0 && Math.abs(diff) < bestBlobSizeDiff) {
+                    if (Math.abs(diff) < bestBlobSizeDiff && currentSizeKB <= targetKB * 1.05) { // Prefer smaller or slightly over
                         bestBlob = tempBlob;
                         bestBlobSizeDiff = Math.abs(diff);
                     }
                     
-                    if (Math.abs(diff / targetKB) < 0.05) { // Within 5%
-                        bestBlob = tempBlob; // Prefer this if it meets target
+                    if (Math.abs(diff / targetKB) < 0.05 && currentSizeKB <= targetKB * 1.05) { 
+                        bestBlob = tempBlob; 
                         break;
                     }
 
-                    if (diff > 0) { // Too large, reduce quality
+                    if (diff > 0) { 
                         maxQuality = currentQuality;
-                    } else { // Too small, increase quality
+                    } else { 
                         minQuality = currentQuality;
                     }
                     
-                    if ((maxQuality - minQuality) < 0.01) break; // Converged
+                    if ((maxQuality - minQuality) < 0.01) break; 
                     
                     currentQuality = (minQuality + maxQuality) / 2;
                 }
                 blob = bestBlob || (await dataURLtoBlob(exportCanvas.toDataURL(exportFormat, exportQuality))); 
                 if (bestBlob) {
-                     showNotification(`Achieved ~${formatBytes(bestBlob.size)} for target ${targetKB}KB.`, 'info', 2000);
+                    showNotification(`Achieved ~${formatBytes(bestBlob.size)} for target ${targetKB}KB.`, 'info', 2000);
                 } else {
-                     showNotification(`Could not meet target size precisely. Got ${formatBytes(blob.size)}.`, 'warning', 2000);
+                    showNotification(`Could not meet target size precisely. Got ${formatBytes(blob.size)}.`, 'warning', 2000);
                 }
 
             } else {
@@ -1663,7 +1667,7 @@
         downloadActiveButton.addEventListener('click', async () => {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
             
-            exportLoader.style.display = 'flex'; // Use flex for centering loader
+            exportLoader.style.display = 'flex'; 
             exportMessage.textContent = `Processing active image...`;
             downloadActiveButton.disabled = true;
             downloadAllButton.disabled = true;
@@ -1707,11 +1711,10 @@
                 const imgData = imageStore[i];
                 exportMessage.textContent = `Processing image ${i + 1} of ${imageStore.length}: ${imgData.name}.${imgData.ext}`;
                 try {
-                    // Use global export settings for batch download, but unique name from original
                     const baseName = `${imgData.name}_edited_batch_${i+1}`; 
                     await exportSingleImage(imgData, baseName, globalFormat, globalQuality, globalTargetSizeKB);
                     successCount++;
-                    await new Promise(resolve => setTimeout(resolve, 200)); // Small delay between downloads
+                    await new Promise(resolve => setTimeout(resolve, 200)); 
                 } catch (error) {
                     console.error(`Batch export error for ${imgData.name}:`, error);
                     errorCount++;
@@ -1722,7 +1725,7 @@
             enableAllControls();
             const finalMessage = `${successCount} image(s) downloaded. ${errorCount > 0 ? errorCount + ' error(s).' : ''}`;
             exportMessage.textContent = finalMessage;
-            showNotification(finalMessage, errorCount > 0 ? 'warning' : 'success');
+            showNotification(finalMessage, errorCount > 0 ? 'warning' : (successCount > 0 ? 'success': 'info'));
         });
         
         // --- Window Resize Listener ---
