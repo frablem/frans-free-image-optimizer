@@ -62,7 +62,7 @@
         .crop-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
         .crop-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: ew-resize; }
         .crop-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: ew-resize; }
-        
+       
         .crop-grid-line {
             position: absolute;
             background-color: rgba(0, 0, 0, 0.4);
@@ -106,7 +106,7 @@
         .file\:bg-blue-800 { background-color: #1e3a8a !important; }
         .file\:text-blue-300 { color: #93c5fd !important; }
         .hover\:file\:bg-blue-700:hover .file\:bg-blue-800 { background-color: #1e40af !important; }
-        
+       
         #imageSelectorList button {
             display: block;
             width: 100%;
@@ -159,7 +159,7 @@
         .notification.error { background-color: #EF4444; color: white; }
         .notification.warning { background-color: #F59E0B; color: white; }
         .notification.info { background-color: #3B82F6; color: white; }
-        
+       
         .zoom-controls {
             position: absolute;
             bottom: 10px;
@@ -205,7 +205,7 @@
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col md:flex-row h-screen overflow-hidden">
 
-    <div class="w-full md:w-96 bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-[60vh] md:h-screen">
+    <div class="w-full md:w-[21.6rem] bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-[60vh] md:h-screen">
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold text-blue-400">Freemaged</h1>
             <div class="flex items-center space-x-2">
@@ -229,7 +229,7 @@
             <div id="imageSelectorList" class="max-h-48 overflow-y-auto bg-gray-700/50 rounded-md p-2 space-y-1">
             </div>
         </div>
-        
+       
         <button id="resetImage" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mb-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Reset active image to its original state">
             <i class="fas fa-undo mr-2"></i>Reset Active Image
         </button>
@@ -413,7 +413,7 @@
             </div>
             <p id="exportMessage" class="text-sm text-gray-400 mt-2"></p>
         </div>
-        
+       
         <div class="flex-grow"></div>
 
         <div>
@@ -427,6 +427,7 @@
             <div class="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-400 text-left">
                 <p>Made by <a href="https://frandez.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-300">frandez.com</a></p>
                 <p class="mt-1">This exists because all other sites are greedy.</p>
+                <p class="mt-1"><a href="/about" class="underline hover:text-blue-300">About this tool.</a></p>
             </div>
         </div>
     </div>
@@ -434,8 +435,7 @@
     <div id="canvasHost" class="flex-grow bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden">
         <div class="canvas-container shadow-lg rounded-md bg-gray-700"> 
             <canvas id="imageCanvas"></canvas>
-            <canvas id="drawingCanvas"></canvas> <!-- Drawing overlay canvas -->
-        </div>
+            <canvas id="drawingCanvas"></canvas> </div>
          <div id="canvasMessage" class="absolute inset-0 flex items-center justify-center text-gray-400 text-lg bg-gray-800 bg-opacity-90 pointer-events-none">
             <p>Upload image(s) or paste (Ctrl+V) to start editing.</p>
         </div>
@@ -542,7 +542,7 @@
         const zoomOutBtn = document.getElementById('zoomOutBtn');
         const zoomResetBtn = document.getElementById('zoomResetBtn');
         const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
-        
+       
         // State Variables
         let imageStore = [];
         let activeImageIndex = -1; 
@@ -598,7 +598,7 @@
         }
 
         function dataURLtoBlob(dataurl) { return fetch(dataurl).then(res => res.blob()); }
-        
+       
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -611,7 +611,7 @@
         function saveState(operationName = "Unknown operation") {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
-            
+           
             if (activeImgData.historyPointer < activeImgData.history.length - 1) {
                 activeImgData.history = activeImgData.history.slice(0, activeImgData.historyPointer + 1);
             }
@@ -644,7 +644,7 @@
                 undoButton.disabled = activeImgData.historyPointer <= 0;
             }
         });
-        
+       
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
                 if (!undoButton.disabled) {
@@ -675,10 +675,10 @@
                     });
                     button.classList.add('active', ...activeClasses);
                     button.classList.remove(...inactiveClasses);
-                    
+                   
                     tabContents.forEach(content => content.classList.remove('active'));
                     document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
-                    
+                   
                     if (button.dataset.tab !== 'crop' && isCropping) cancelCropMode();
                     if (button.dataset.tab !== 'draw' && isDrawing) cancelDrawMode();
                     if (button.dataset.tab !== 'adjust') {
@@ -709,7 +709,7 @@
         function enableAllControls() { 
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
             const activeImgData = imageStore[activeImageIndex];
-            
+           
             const controls = [
                 applyResizeBtn, downloadActiveButton, resetImageBtn, rotateLeftBtn, rotateRightBtn,
                 flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn,
@@ -726,7 +726,7 @@
             downloadAllButton.disabled = imageStore.length === 0; 
             undoButton.disabled = activeImgData.historyPointer <= 0;
         }
-        
+       
         // --- IMAGE LOADING (UPLOAD & PASTE) ---
         document.addEventListener('paste', async (e) => {
             e.preventDefault();
@@ -788,7 +788,7 @@
                                     original: originalImg, 
                                     current: currentImg, 
                                     history: [initialStateSrc], 
-                                    historyPointer: 0,       
+                                    historyPointer: 0,     
                                     name: file.name.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_') || `pasted_image_${i}`,
                                     ext: file.name.split('.').pop().toLowerCase() || 'png',
                                     originalFileSizeBytes: file.size
@@ -841,7 +841,7 @@
 
         function setActiveImage(index, shouldSaveState = true) {
             if (index < 0 || index >= imageStore.length) return;
-            
+           
             if (isCropping) cancelCropMode(); 
             if (isDrawing) cancelDrawMode();
 
@@ -850,7 +850,7 @@
             Array.from(imageSelectorList.children).forEach((btn, i) => {
                 btn.classList.toggle('active-image', i === activeImageIndex);
             });
-            
+           
             const activeImgData = imageStore[activeImageIndex];
             if (imageStore.length === 1) { 
                 loadedFileNameEl.textContent = `${activeImgData.name}.${activeImgData.ext}`;
@@ -869,7 +869,7 @@
 
             undoButton.disabled = activeImgData.historyPointer <= 0;
         }
-        
+       
         // --- CANVAS DRAWING & ZOOM ---
         function drawImageToCanvas(imageToDraw, zoom = currentZoomLevel, filters = null) {
             if (!imageToDraw) {
@@ -887,11 +887,11 @@
 
             const containerWidth = localCanvasContainer.clientWidth;
             const containerHeight = localCanvasContainer.clientHeight;
-            
+           
             let baseDrawWidth = imageToDraw.width;
             let baseDrawHeight = imageToDraw.height;
             const imageAspectRatio = baseDrawWidth / baseDrawHeight;
-            
+           
             let displayWidth, displayHeight;
             if (containerWidth / containerHeight > imageAspectRatio) {
                 displayHeight = containerHeight;
@@ -900,7 +900,7 @@
                 displayWidth = containerWidth;
                 displayHeight = displayWidth / imageAspectRatio;
             }
-            
+           
             imageCanvas.width = Math.round(baseDrawWidth); 
             imageCanvas.height = Math.round(baseDrawHeight);
 
@@ -936,7 +936,7 @@
         function drawImageToCanvasWithFilters(imageToDraw, filtersToApply) {
             drawImageToCanvas(imageToDraw, currentZoomLevel, filtersToApply);
         }
-        
+       
         function updateDimensionDisplaysForActive() {
             if (activeImageIndex !== -1 && imageStore[activeImageIndex]) {
                 const activeImgData = imageStore[activeImageIndex];
@@ -974,10 +974,10 @@
                 updateCropSelectionVisuals();
             }
         }
-        
+       
         resetImageBtn.addEventListener('click', () => {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
-            
+           
             const activeImgData = imageStore[activeImageIndex];
             const newCurrentImage = new Image();
             newCurrentImage.onload = () => {
@@ -1011,7 +1011,7 @@
             const percent = parseInt(resizePercent.value);
             resizePercentValue.textContent = percent;
             const activeImg = imageStore[activeImageIndex].current; 
-            
+           
             const newWidth = Math.round(activeImg.width * (percent / 100));
             const newHeight = Math.round(activeImg.height * (percent / 100));
             resizeWidthInput.value = newWidth > 0 ? newWidth : 1; 
@@ -1043,7 +1043,7 @@
             }
             updatePercentSliderFromDimensions(parseInt(resizeWidthInput.value), newHeight);
         });
-        
+       
         function updatePercentSliderFromDimensions(w, h) {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImg = imageStore[activeImageIndex].current;
@@ -1087,7 +1087,7 @@
                     }
                 }
             }
-            
+           
             newW = Math.max(1, newW || originalCurrentWidth); 
             newH = Math.max(1, newH || originalCurrentHeight);
 
@@ -1129,7 +1129,7 @@
             imageCanvas.style.cursor = 'crosshair';
             initializeCropSelection();
         });
-        
+       
         cancelCropBtn.addEventListener('click', cancelCropMode);
 
         function cancelCropMode() {
@@ -1167,24 +1167,24 @@
             removeCropVisuals(); 
             cropSelectionDiv = document.createElement('div');
             cropSelectionDiv.className = 'crop-selection';
-            
+           
             localCanvasHost.appendChild(cropSelectionDiv);
 
             const initialWidthUnzoomed = unzoomedCanvasClientWidth * 0.8;
             const initialHeightUnzoomed = unzoomedCanvasClientHeight * 0.8;
             const initialXUnzoomed = (unzoomedCanvasClientWidth - initialWidthUnzoomed) / 2;
             const initialYUnzoomed = (unzoomedCanvasClientHeight - initialHeightUnzoomed) / 2;
-            
+           
             cropRect = { x: initialXUnzoomed, y: initialYUnzoomed, width: initialWidthUnzoomed, height: initialHeightUnzoomed };
             updateCropSelectionVisuals(); 
-            
+           
             if(cropSelectionDiv) {
                 cropSelectionDiv.addEventListener('mousedown', onCropMouseDown);
             }
             document.addEventListener('mousemove', onCropMouseMove);
             document.addEventListener('mouseup', onCropMouseUp);
         }
-        
+       
         function removeCropVisuals() {
             if (cropSelectionDiv) {
                 cropSelectionDiv.removeEventListener('mousedown', onCropMouseDown);
@@ -1221,7 +1221,7 @@
 
             const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
             const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
-            
+           
             if (unzoomedCanvasClientWidth > 0 && unzoomedCanvasClientHeight > 0) {
                 const scaleFactorX = activeImgData.current.width / unzoomedCanvasClientWidth;
                 const scaleFactorY = activeImgData.current.height / unzoomedCanvasClientHeight;
@@ -1231,7 +1231,7 @@
                 cropWidthEl.value = 0;
                 cropHeightEl.value = 0;
             }
-            
+           
             if (cropSelectionDiv) {
                 if (cropHandles.length === 0) {
                     const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
@@ -1260,7 +1260,7 @@
                 }
             }
         }
-        
+       
         aspectRatioSelect.addEventListener('change', () => {
             if (!isCropping || !cropSelectionDiv || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImg = imageStore[activeImageIndex].current; 
@@ -1277,7 +1277,7 @@
                 const parts = selectedRatio.split(':').map(Number);
                 ratioValue = parts[0] / parts[1];
             }
-            
+           
             let newUnzoomedWidth = cropRect.width; 
             let newUnzoomedHeight = newUnzoomedWidth / ratioValue;
 
@@ -1289,7 +1289,7 @@
                 newUnzoomedWidth = unzoomedCanvasClientWidth - cropRect.x;
                 newUnzoomedHeight = newUnzoomedWidth / ratioValue;
             }
-            
+           
             cropRect.width = Math.max(20, newUnzoomedWidth); 
             cropRect.height = Math.max(20, newUnzoomedHeight); 
             updateCropSelectionVisuals();
@@ -1303,11 +1303,11 @@
             e.preventDefault(); e.stopPropagation();
             dragInfo.active = true;
             dragInfo.target = e.target.classList.contains('crop-handle') ? e.target.dataset.type : 'selection';
-            
+           
             const hostBoundingRect = localCanvasHost.getBoundingClientRect();
             dragInfo.startX = e.clientX - hostBoundingRect.left;
             dragInfo.startY = e.clientY - hostBoundingRect.top;
-            
+           
             dragInfo.originalRect = { ...cropRect }; 
         }
 
@@ -1318,9 +1318,9 @@
             if (!localCanvasHost) { console.error("onCropMouseMove: canvasHost not found!"); return; }
 
             e.preventDefault(); e.stopPropagation();
-            
+           
             const hostBoundingRect = localCanvasHost.getBoundingClientRect();
-            
+           
             const mouseXOnHost = e.clientX - hostBoundingRect.left;
             const mouseYOnHost = e.clientY - hostBoundingRect.top;
 
@@ -1329,7 +1329,7 @@
 
             const deltaX = deltaX_screen / currentZoomLevel;
             const deltaY = deltaY_screen / currentZoomLevel;
-            
+           
             let newX = dragInfo.originalRect.x;
             let newY = dragInfo.originalRect.y;
             let newWidth = dragInfo.originalRect.width;
@@ -1344,7 +1344,7 @@
                 if (dragInfo.target.includes('e')) { newWidth = dragInfo.originalRect.width + deltaX; }
                 if (dragInfo.target.includes('n')) { newY = dragInfo.originalRect.y + deltaY; newHeight = dragInfo.originalRect.height - deltaY; }
                 if (dragInfo.target.includes('s')) { newHeight = dragInfo.originalRect.height + deltaY; }
-                
+               
                 const selectedRatioOption = aspectRatioSelect.value;
                 if (selectedRatioOption !== 'freeform') {
                     let targetAspectRatio;
@@ -1407,10 +1407,10 @@
                 showNotification('Error: Canvas display area is zero. Cannot crop.', 'error');
                 return;
             }
-            
+           
             const scaleXToImage = activeImgData.current.width / unzoomedCanvasClientWidth;
             const scaleYToImage = activeImgData.current.height / unzoomedCanvasClientHeight;
-            
+           
             const sx = cropRect.x * scaleXToImage;
             const sy = cropRect.y * scaleYToImage;
             const sWidth = cropRect.width * scaleXToImage;
@@ -1425,7 +1425,7 @@
             tempCanvas.height = Math.round(sHeight);
             const tempCtx = tempCanvas.getContext('2d');
             tempCtx.drawImage(activeImgData.current, sx, sy, sWidth, sHeight, 0, 0, tempCanvas.width, tempCanvas.height);
-            
+           
             const newCroppedImage = new Image();
             newCroppedImage.onload = () => {
                 activeImgData.current = newCroppedImage; 
@@ -1446,7 +1446,7 @@
             grayscaleSlider.value = 0; grayscaleValue.textContent = '0';
             tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
         }
-        
+       
         function resetTempAdjustmentFilters(shouldRedraw = true) {
              tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
              resetAdjustmentControls(); 
@@ -1467,11 +1467,11 @@
                 contrastValue.textContent = tempFilters.contrast;
                 saturationValue.textContent = tempFilters.saturation;
                 grayscaleValue.textContent = tempFilters.grayscale;
-                
+               
                 drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
             });
         });
-        
+       
         resetAdjustmentsBtn.addEventListener('click', () => {
             if (activeImageIndex === -1) return;
             resetTempAdjustmentFilters(); 
@@ -1481,7 +1481,7 @@
         applyAdjustmentsBtn.addEventListener('click', () => {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
-            
+           
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = activeImgData.current.width;
             tempCanvas.height = activeImgData.current.height;
@@ -1492,7 +1492,7 @@
             if (tempFilters.contrast !== 100) filterString += `contrast(${tempFilters.contrast}%) `;
             if (tempFilters.saturation !== 100) filterString += `saturate(${tempFilters.saturation}%) `;
             if (tempFilters.grayscale !== 0) filterString += `grayscale(${tempFilters.grayscale}%) `;
-            
+           
             tempCtx.filter = filterString.trim();
             tempCtx.drawImage(activeImgData.current, 0, 0);
             tempCtx.filter = 'none'; 
@@ -1776,7 +1776,7 @@
                 let minQ = 0.01, maxQ = 1.0;
                 let bestDataUrl = '';
                 let bestBlobSizeDiff = Infinity;
-                
+               
                 const highQualityDataUrl = resizeCanvas.toDataURL(format, maxQ);
                 const highQualityBlob = await dataURLtoBlob(highQualityDataUrl);
                 if (highQualityBlob.size / 1024 <= targetKb) {
@@ -1835,13 +1835,13 @@
                 quality: exportQuality,
                 targetKb: targetKB
             });
-            
+           
             if (!dataUrl) {
                 throw new Error("Failed to generate image for download.");
             }
 
             const blob = await dataURLtoBlob(dataUrl);
-            
+           
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = finalFileName;
@@ -1852,7 +1852,7 @@
 
         downloadActiveButton.addEventListener('click', async () => {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
-            
+           
             exportLoader.style.display = 'flex'; 
             exportMessage.textContent = `Processing active image...`;
             downloadActiveButton.disabled = true;
@@ -1911,7 +1911,7 @@
             exportMessage.textContent = finalMessage;
             showNotification(finalMessage, errorCount > 0 ? 'warning' : (successCount > 0 ? 'success': 'info'));
         });
-        
+       
         // --- WINDOW RESIZE ---
         const debouncedRedraw = debounce(() => {
             if (activeImageIndex !== -1 && imageStore[activeImageIndex]) { 
