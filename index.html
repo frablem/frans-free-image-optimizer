@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Image Editor - Enhanced</title>
+    <title>Freemaged - Image Editor</title>
+    <link rel="icon" href="/fav.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -29,6 +30,13 @@
             object-fit: contain;
             cursor: grab;
             transition: transform 0.2s ease-out;
+        }
+        #drawingCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none; /* Initially not interactive */
+            z-index: 10;
         }
         .crop-selection {
             position: absolute;
@@ -151,25 +159,7 @@
         .notification.error { background-color: #EF4444; color: white; }
         .notification.warning { background-color: #F59E0B; color: white; }
         .notification.info { background-color: #3B82F6; color: white; }
-
-
-        [data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-5px);
-            background-color: #1f2937;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            z-index: 100;
-        }
-        [data-tooltip] {
-            position: relative;
-        }
+        
         .zoom-controls {
             position: absolute;
             bottom: 10px;
@@ -203,6 +193,10 @@
             padding: 0 5px;
             line-height: 30px;
         }
+        .tool-button.active {
+            background-color: #2563eb;
+            color: white;
+        }
 
     </style>
     <script>
@@ -213,19 +207,19 @@
 
     <div class="w-full md:w-96 bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-[60vh] md:h-screen">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-blue-400">Free Image Editor</h1>
+            <h1 class="text-2xl font-bold text-blue-400">Freemaged</h1>
             <div class="flex items-center space-x-2">
-                <button id="undoButton" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" title="Undo Last Action" data-tooltip="Undo Last Action (Ctrl+Z)" disabled>
+                <button id="undoButton" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" title="Undo Last Action (Ctrl+Z)" disabled>
                     <i class="fas fa-undo fa-lg"></i>
                 </button>
-                <a href="#" onclick="location.reload(); return false;" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700" title="Refresh Page & Clear All" data-tooltip="Refresh Page & Clear All">
+                <a href="#" onclick="location.reload(); return false;" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700" title="Refresh Page & Clear All">
                     <i class="fas fa-sync-alt fa-lg"></i>
                 </a>
             </div>
         </div>
 
         <div class="mb-4">
-            <label for="imageUpload" class="block text-sm font-medium text-gray-300 mb-1">Upload Image(s)</label>
+            <label for="imageUpload" class="block text-sm font-medium text-gray-300 mb-1">Upload Image(s) or Paste (Ctrl+V)</label>
             <input type="file" id="imageUpload" accept="image/*" multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-800 file:text-blue-300 hover:file:bg-blue-700 cursor-pointer">
             <p id="loadedFileName" class="text-xs text-gray-500 mt-1 truncate"></p>
         </div>
@@ -236,16 +230,18 @@
             </div>
         </div>
         
-        <button id="resetImage" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mb-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Reset active image to its original state">
+        <button id="resetImage" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mb-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Reset active image to its original state">
             <i class="fas fa-undo mr-2"></i>Reset Active Image
         </button>
 
         <div class="mb-4 border-b border-gray-700">
-            <nav class="flex -mb-px space-x-1" aria-label="Tabs">
-                <button class="tab-button active w-1/4 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="resize" data-tooltip="Resize options">Resize</button>
-                <button class="tab-button w-1/4 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="crop" data-tooltip="Crop options">Crop</button>
-                <button class="tab-button w-1/4 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="adjust" data-tooltip="Adjustments & Filters">Adjust</button>
-                <button class="tab-button w-1/4 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="export" data-tooltip="Export options">Export</button>
+            <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
+                <button class="tab-button active w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="resize" title="Resize options">Resize</button>
+                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="crop" title="Crop options">Crop</button>
+                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="adjust" title="Adjustments & Filters">Adjust</button>
+                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="draw" title="Drawing Tools">Draw</button>
+                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="optimize" title="Optimization Tools">Optimize</button>
+                <button class="tab-button w-1/3 py-2.5 px-1 text-center border border-b-0 rounded-t-md text-sm font-medium" data-tab="export" title="Export options">Export</button>
             </nav>
         </div>
 
@@ -268,7 +264,7 @@
                 <input id="aspectLock" type="checkbox" checked class="h-4 w-4 text-blue-400 border-gray-600 rounded focus:ring-blue-400 bg-gray-700">
                 <label for="aspectLock" class="ml-2 block text-sm text-gray-300">Lock Aspect Ratio</label>
             </div>
-            <button id="applyResize" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Apply current resize settings">Apply Resize to Active</button>
+            <button id="applyResize" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Apply current resize settings">Apply Resize to Active</button>
         </div>
 
         <div id="tab-crop" class="tab-content space-y-4">
@@ -294,19 +290,19 @@
                     <input type="number" id="cropHeight" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm sm:text-sm p-2 bg-gray-600" readonly>
                 </div>
             </div>
-            <button id="startCrop" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Activate crop selection tool"><i class="fas fa-crop-alt mr-2"></i>Start/Adjust Crop</button>
-            <button id="applyCrop" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Apply current crop selection">Apply Crop</button>
-            <button id="cancelCrop" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Cancel current crop operation">Cancel Crop Mode</button>
+            <button id="startCrop" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Activate crop selection tool"><i class="fas fa-crop-alt mr-2"></i>Start/Adjust Crop</button>
+            <button id="applyCrop" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Apply current crop selection">Apply Crop</button>
+            <button id="cancelCrop" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Cancel current crop operation">Cancel Crop Mode</button>
         </div>
 
         <div id="tab-adjust" class="tab-content space-y-4">
             <div class="space-y-2">
                 <h4 class="text-sm font-medium text-gray-300">Transform</h4>
                 <div class="grid grid-cols-2 gap-2">
-                    <button id="rotateLeft" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Rotate 90° Left"><i class="fas fa-rotate-left mr-1"></i> Rotate Left</button>
-                    <button id="rotateRight" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Rotate 90° Right"><i class="fas fa-rotate-right mr-1"></i> Rotate Right</button>
-                    <button id="flipHorizontal" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Flip Horizontal"><i class="fas fa-arrows-left-right mr-1"></i> Flip Horizontal</button>
-                    <button id="flipVertical" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Flip Vertical"><i class="fas fa-arrows-up-down mr-1"></i> Flip Vertical</button>
+                    <button id="rotateLeft" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Rotate 90° Left"><i class="fas fa-rotate-left mr-1"></i> Rotate Left</button>
+                    <button id="rotateRight" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Rotate 90° Right"><i class="fas fa-rotate-right mr-1"></i> Rotate Right</button>
+                    <button id="flipHorizontal" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Flip Horizontal"><i class="fas fa-arrows-left-right mr-1"></i> Flip Horizontal</button>
+                    <button id="flipVertical" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Flip Vertical"><i class="fas fa-arrows-up-down mr-1"></i> Flip Vertical</button>
                 </div>
             </div>
             <div class="space-y-2">
@@ -327,28 +323,62 @@
                     <label for="grayscale" class="block text-xs font-medium text-gray-300">Grayscale: <span id="grayscaleValue">0</span>%</label>
                     <input type="range" id="grayscale" min="0" max="100" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400 disabled:cursor-not-allowed" disabled>
                 </div>
-                 <button id="applyAdjustments" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled data-tooltip="Apply current filter adjustments">Apply Adjustments</button>
-                 <button id="resetAdjustments" class="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled data-tooltip="Reset all filter adjustments">Reset Adjustments</button>
-            </div>
-             <div class="space-y-2 pt-2 border-t border-gray-700">
-                <h4 class="text-sm font-medium text-gray-300">Text Overlay</h4>
-                <input type="text" id="textOverlayInput" placeholder="Enter text" class="w-full rounded-md text-sm p-2 disabled:cursor-not-allowed" disabled>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="color" id="textColorInput" value="#FFFFFF" class="w-full h-10 rounded-md disabled:cursor-not-allowed" disabled data-tooltip="Text color">
-                    <input type="number" id="textSizeInput" value="30" min="8" max="200" placeholder="Size" class="w-full rounded-md text-sm p-2 disabled:cursor-not-allowed" disabled data-tooltip="Text size (px)">
-                </div>
-                 <select id="textFontInput" class="w-full rounded-md text-sm p-2 disabled:cursor-not-allowed" disabled>
-                    <option value="Arial">Arial</option>
-                    <option value="Verdana">Verdana</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                    <option value="Courier New">Courier New</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Comic Sans MS">Comic Sans MS</option>
-                </select>
-                <button id="addTextButton" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Add text to image (click canvas to place)">Add Text</button>
+                 <button id="applyAdjustments" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled title="Apply current filter adjustments">Apply Adjustments</button>
+                 <button id="resetAdjustments" class="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled title="Reset all filter adjustments">Reset Adjustments</button>
             </div>
         </div>
 
+        <div id="tab-draw" class="tab-content space-y-4">
+            <div>
+                <h4 class="text-sm font-medium text-gray-300 mb-2">Drawing Tools</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="penTool" class="tool-button bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Free Draw"><i class="fas fa-pencil-alt mr-1"></i> Pen</button>
+                    <button id="arrowTool" class="tool-button bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md text-xs disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Draw Arrow"><i class="fas fa-long-arrow-alt-right mr-1"></i> Arrow</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 items-center">
+                <div>
+                    <label for="drawColor" class="block text-xs font-medium text-gray-300">Color</label>
+                    <input type="color" id="drawColor" value="#EF4444" class="w-full h-10 rounded-md disabled:cursor-not-allowed" disabled>
+                </div>
+                <div>
+                    <label for="lineWidth" class="block text-xs font-medium text-gray-300">Line Width: <span id="lineWidthValue">5</span>px</label>
+                    <input type="range" id="lineWidth" min="1" max="50" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-400 disabled:cursor-not-allowed" disabled>
+                </div>
+            </div>
+            <button id="startDraw" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Activate drawing mode"><i class="fas fa-paint-brush mr-2"></i>Start Drawing</button>
+            <button id="applyDraw" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled title="Apply drawing to image">Apply Drawing</button>
+            <button id="cancelDraw" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled title="Cancel current drawing">Cancel Drawing</button>
+        </div>
+
+        <div id="tab-optimize" class="tab-content space-y-4">
+            <div>
+                <h4 class="text-sm font-medium text-gray-300 mb-2">Optimization Presets</h4>
+                <p class="text-xs text-gray-400 mb-3">Apply common optimization settings and download the result with one click.</p>
+                <div class="space-y-2">
+                    <button id="optimizeWeb" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Optimize & Download for Web
+                    </button>
+                    <p class="text-xs text-gray-400 -mt-1 px-1">Best for general website use. Resizes to max 1920px width and converts to WEBP for a balance of quality and size.</p>
+                </div>
+                <div class="space-y-2 mt-3">
+                    <button id="optimizeShopify" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Optimize & Download for Shopify
+                    </button>
+                    <p class="text-xs text-gray-400 -mt-1 px-1">Resizes image to a max dimension of 2000px, ideal for product images. Uses high-quality JPG.</p>
+                </div>
+                 <div class="space-y-2 mt-3">
+                    <button id="optimizeFirebase" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Optimize & Download for Firebase
+                    </button>
+                    <p class="text-xs text-gray-400 -mt-1 px-1">Resizes to max 1000px and compresses to under 300KB JPG, great for storage and fast loading.</p>
+                </div>
+            </div>
+            <div id="optimizeLoader" class="hidden mt-2 items-center justify-center flex-col">
+                <div class="loader"></div>
+                <p class="text-sm text-center text-gray-400 mt-1">Optimizing...</p>
+            </div>
+        </div>
 
         <div id="tab-export" class="tab-content space-y-4">
             <div>
@@ -358,22 +388,23 @@
             <div>
                 <label for="fileFormat" class="block text-sm font-medium text-gray-300">Format</label>
                 <select id="fileFormat" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2">
+                    <option value="image/jpeg" selected>JPG</option>
                     <option value="image/png">PNG</option>
-                    <option value="image/jpeg" selected>JPG</option> <option value="image/webp">WEBP</option>
+                    <option value="image/webp">WEBP</option>
                 </select>
             </div>
             <div id="qualityContainer">
-                <label for="quality" class="block text-sm font-medium text-gray-300">Quality: <span id="qualityValue">0.9</span></label>
-                <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.9" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400">
+                <label for="quality" class="block text-sm font-medium text-gray-300">Quality: <span id="qualityValue">1</span></label>
+                <input type="range" id="quality" min="0.1" max="1" step="0.05" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-400">
             </div>
             <div>
                 <label for="targetFileSize" class="block text-sm font-medium text-gray-300">Target File Size (KB, optional for JPG/WEBP)</label>
                 <input type="number" id="targetFileSize" placeholder="e.g., 500" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-blue-400 focus:ring-blue-400 sm:text-sm p-2">
             </div>
-            <button id="downloadActiveButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Download the currently active edited image">
+            <button id="downloadActiveButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Download the currently active edited image">
                 <i class="fas fa-download mr-2"></i>Download Active Image
             </button>
-            <button id="downloadAllButton" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md text-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled data-tooltip="Download all processed images as individual files">
+            <button id="downloadAllButton" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md text-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Download all processed images as individual files">
                 <i class="fas fa-file-archive mr-2"></i>Download All Processed
             </button>
             <div id="exportLoader" class="hidden mt-2 items-center justify-center flex-col">
@@ -403,15 +434,16 @@
     <div id="canvasHost" class="flex-grow bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden">
         <div class="canvas-container shadow-lg rounded-md bg-gray-700"> 
             <canvas id="imageCanvas"></canvas>
+            <canvas id="drawingCanvas"></canvas> <!-- Drawing overlay canvas -->
         </div>
          <div id="canvasMessage" class="absolute inset-0 flex items-center justify-center text-gray-400 text-lg bg-gray-800 bg-opacity-90 pointer-events-none">
-            <p>Upload image(s) to start editing.</p>
+            <p>Upload image(s) or paste (Ctrl+V) to start editing.</p>
         </div>
         <div class="zoom-controls">
-            <button id="zoomOutBtn" data-tooltip="Zoom Out (-)"><i class="fas fa-search-minus"></i></button>
+            <button id="zoomOutBtn" title="Zoom Out (-)"><i class="fas fa-search-minus"></i></button>
             <span id="zoomLevelDisplay">100%</span>
-            <button id="zoomInBtn" data-tooltip="Zoom In (+)"><i class="fas fa-search-plus"></i></button>
-            <button id="zoomResetBtn" data-tooltip="Reset Zoom (100%)"><i class="fas fa-expand"></i></button>
+            <button id="zoomInBtn" title="Zoom In (+)"><i class="fas fa-search-plus"></i></button>
+            <button id="zoomResetBtn" title="Reset Zoom (100%)"><i class="fas fa-expand"></i></button>
         </div>
     </div>
 
@@ -421,15 +453,19 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Main Elements
         const imageUpload = document.getElementById('imageUpload');
         const loadedFileNameEl = document.getElementById('loadedFileName');
         const imageSelectorContainer = document.getElementById('imageSelectorContainer');
         const imageSelectorList = document.getElementById('imageSelectorList');
         const imageCanvas = document.getElementById('imageCanvas');
         const ctx = imageCanvas.getContext('2d');
+        const drawingCanvas = document.getElementById('drawingCanvas');
+        const drawCtx = drawingCanvas.getContext('2d');
         const canvasMessage = document.getElementById('canvasMessage');
         const notificationArea = document.getElementById('notificationArea');
 
+        // Header & Info
         const undoButton = document.getElementById('undoButton');
         const resetImageBtn = document.getElementById('resetImage');
         const activeImageNameEl = document.getElementById('activeImageName');
@@ -437,9 +473,11 @@
         const originalFileSizeEl = document.getElementById('originalFileSize');
         const currentDimensionsEl = document.getElementById('currentDimensions');
 
+        // Tabs
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
 
+        // Resize Tab
         const resizePercent = document.getElementById('resizePercent');
         const resizePercentValue = document.getElementById('resizePercentValue');
         const resizeWidthInput = document.getElementById('resizeWidth'); 
@@ -447,6 +485,7 @@
         const aspectLock = document.getElementById('aspectLock');
         const applyResizeBtn = document.getElementById('applyResize');
 
+        // Crop Tab
         const aspectRatioSelect = document.getElementById('aspectRatio');
         const cropWidthEl = document.getElementById('cropWidth');
         const cropHeightEl = document.getElementById('cropHeight');
@@ -454,6 +493,7 @@
         const applyCropBtn = document.getElementById('applyCrop');
         const cancelCropBtn = document.getElementById('cancelCrop');
 
+        // Adjust Tab
         const rotateLeftBtn = document.getElementById('rotateLeft');
         const rotateRightBtn = document.getElementById('rotateRight');
         const flipHorizontalBtn = document.getElementById('flipHorizontal');
@@ -468,13 +508,24 @@
         const grayscaleValue = document.getElementById('grayscaleValue');
         const applyAdjustmentsBtn = document.getElementById('applyAdjustments');
         const resetAdjustmentsBtn = document.getElementById('resetAdjustments');
-        const textOverlayInput = document.getElementById('textOverlayInput');
-        const textColorInput = document.getElementById('textColorInput');
-        const textSizeInput = document.getElementById('textSizeInput');
-        const textFontInput = document.getElementById('textFontInput');
-        const addTextButton = document.getElementById('addTextButton');
 
+        // Draw Tab
+        const penToolBtn = document.getElementById('penTool');
+        const arrowToolBtn = document.getElementById('arrowTool');
+        const drawColorInput = document.getElementById('drawColor');
+        const lineWidthSlider = document.getElementById('lineWidth');
+        const lineWidthValue = document.getElementById('lineWidthValue');
+        const startDrawBtn = document.getElementById('startDraw');
+        const applyDrawBtn = document.getElementById('applyDraw');
+        const cancelDrawBtn = document.getElementById('cancelDraw');
 
+        // Optimize Tab
+        const optimizeWebBtn = document.getElementById('optimizeWeb');
+        const optimizeShopifyBtn = document.getElementById('optimizeShopify');
+        const optimizeFirebaseBtn = document.getElementById('optimizeFirebase');
+        const optimizeLoader = document.getElementById('optimizeLoader');
+
+        // Export Tab
         const fileNameInput = document.getElementById('fileName');
         const fileFormatSelect = document.getElementById('fileFormat');
         const qualityContainer = document.getElementById('qualityContainer');
@@ -486,11 +537,13 @@
         const exportLoader = document.getElementById('exportLoader');
         const exportMessage = document.getElementById('exportMessage');
 
+        // Zoom Controls
         const zoomInBtn = document.getElementById('zoomInBtn');
         const zoomOutBtn = document.getElementById('zoomOutBtn');
         const zoomResetBtn = document.getElementById('zoomResetBtn');
         const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
         
+        // State Variables
         let imageStore = [];
         let activeImageIndex = -1; 
         let currentZoomLevel = 1.0;
@@ -503,14 +556,20 @@
         let cropGridLines = [];
         let dragInfo = { active: false, target: null, startX: 0, startY: 0, originalRect: {} };
 
-        let isAddingText = false;
+        let isDrawing = false;
+        let isPainting = false;
+        let drawingTool = 'pen'; // 'pen' or 'arrow'
+        let lastPaintPoint = { x: 0, y: 0 };
+        let startPaintPoint = { x: 0, y: 0 };
+
         let tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
 
-
+        // --- INITIALIZATION ---
         disableAllControls(); 
         setupTabs(); 
         updateQualityVisibility(); 
 
+        // --- UTILITY FUNCTIONS ---
         function showNotification(message, type = 'success', duration = 3000) {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
@@ -548,6 +607,7 @@
             };
         }
 
+        // --- STATE MANAGEMENT (Undo/Redo) ---
         function saveState(operationName = "Unknown operation") {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
@@ -594,7 +654,7 @@
             }
         });
 
-
+        // --- UI SETUP & CONTROL ---
         function setupTabs() {
             const activeClasses = ['bg-blue-500', 'text-white']; 
             const inactiveClasses = ['text-gray-400', 'hover:text-gray-200', 'hover:bg-gray-700'];
@@ -619,12 +679,8 @@
                     tabContents.forEach(content => content.classList.remove('active'));
                     document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
                     
-                    if (button.dataset.tab !== 'crop' && isCropping) {
-                        cancelCropMode();
-                    }
-                    if (button.dataset.tab !== 'adjust' && isAddingText) {
-                        cancelAddTextMode();
-                    }
+                    if (button.dataset.tab !== 'crop' && isCropping) cancelCropMode();
+                    if (button.dataset.tab !== 'draw' && isDrawing) cancelDrawMode();
                     if (button.dataset.tab !== 'adjust') {
                         resetTempAdjustmentFilters(false); 
                     } else {
@@ -637,47 +693,66 @@
         }
 
         function disableAllControls() { 
-            const buttonsToDisable = [
+            const controls = [
                 applyResizeBtn, startCropBtn, applyCropBtn, cancelCropBtn, downloadActiveButton, 
                 downloadAllButton, resetImageBtn, undoButton, rotateLeftBtn, rotateRightBtn,
-                flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn, addTextButton
-            ];
-            const inputsToDisable = [
+                flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn,
                 resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, 
                 fileFormatSelect, qualitySlider, targetFileSizeInput, aspectRatioSelect,
                 brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider,
-                textOverlayInput, textColorInput, textSizeInput, textFontInput
+                penToolBtn, arrowToolBtn, drawColorInput, lineWidthSlider, startDrawBtn,
+                applyDrawBtn, cancelDrawBtn, optimizeWebBtn, optimizeShopifyBtn, optimizeFirebaseBtn
             ];
-
-            buttonsToDisable.forEach(el => el.disabled = true);
-            inputsToDisable.forEach(el => el.disabled = true);
+            controls.forEach(el => el.disabled = true);
         }
 
         function enableAllControls() { 
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
             const activeImgData = imageStore[activeImageIndex];
             
-            const buttonsToEnable = [
+            const controls = [
                 applyResizeBtn, downloadActiveButton, resetImageBtn, rotateLeftBtn, rotateRightBtn,
-                flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn, addTextButton
-            ];
-            const inputsToEnable = [
+                flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn,
                 resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, 
                 fileFormatSelect, qualitySlider, targetFileSizeInput, aspectRatioSelect,
                 brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider,
-                textOverlayInput, textColorInput, textSizeInput, textFontInput
+                penToolBtn, arrowToolBtn, drawColorInput, lineWidthSlider, startDrawBtn,
+                optimizeWebBtn, optimizeShopifyBtn, optimizeFirebaseBtn
             ];
 
-            buttonsToEnable.forEach(el => el.disabled = false);
-            inputsToEnable.forEach(el => el.disabled = false);
+            controls.forEach(el => el.disabled = false);
 
             startCropBtn.disabled = false; 
             downloadAllButton.disabled = imageStore.length === 0; 
             undoButton.disabled = activeImgData.historyPointer <= 0;
         }
         
+        // --- IMAGE LOADING (UPLOAD & PASTE) ---
+        document.addEventListener('paste', async (e) => {
+            e.preventDefault();
+            const items = (e.clipboardData || window.clipboardData).items;
+            let file = null;
+            for (const item of items) {
+                if (item.type.indexOf('image') === 0) {
+                    file = item.getAsFile();
+                    break;
+                }
+            }
+            if (file) {
+                showNotification('Pasted image detected!', 'info', 2000);
+                await handleFiles([file]);
+            } else {
+                showNotification('No image found in clipboard.', 'warning');
+            }
+        });
+
         imageUpload.addEventListener('change', async (event) => {
             const files = event.target.files;
+            if (!files || files.length === 0) return;
+            await handleFiles(Array.from(files));
+        });
+
+        async function handleFiles(files) {
             if (!files || files.length === 0) {
                 disableAllControls();
                 imageSelectorContainer.classList.add('hidden');
@@ -713,9 +788,9 @@
                                     original: originalImg, 
                                     current: currentImg, 
                                     history: [initialStateSrc], 
-                                    historyPointer: 0,          
-                                    name: file.name.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_'),
-                                    ext: file.name.split('.').pop().toLowerCase(),
+                                    historyPointer: 0,       
+                                    name: file.name.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_') || `pasted_image_${i}`,
+                                    ext: file.name.split('.').pop().toLowerCase() || 'png',
                                     originalFileSizeBytes: file.size
                                 });
                             };
@@ -747,7 +822,7 @@
                 showNotification(`Error loading images: ${error.message}`, 'error');
                 canvasMessage.innerHTML = '<p>Error loading images. Please try again.</p>';
             }
-        });
+        }
 
         function populateImageSelector() {
             imageSelectorList.innerHTML = '';
@@ -768,7 +843,7 @@
             if (index < 0 || index >= imageStore.length) return;
             
             if (isCropping) cancelCropMode(); 
-            if (isAddingText) cancelAddTextMode();
+            if (isDrawing) cancelDrawMode();
 
             activeImageIndex = index;
 
@@ -795,6 +870,7 @@
             undoButton.disabled = activeImgData.historyPointer <= 0;
         }
         
+        // --- CANVAS DRAWING & ZOOM ---
         function drawImageToCanvas(imageToDraw, zoom = currentZoomLevel, filters = null) {
             if (!imageToDraw) {
                 ctx.clearRect(0,0,imageCanvas.width, imageCanvas.height);
@@ -846,6 +922,15 @@
             ctx.filter = filterString.trim();
             ctx.drawImage(imageToDraw, 0, 0, imageCanvas.width, imageCanvas.height);
             ctx.filter = 'none'; 
+
+            // Sync drawing canvas
+            const rect = imageCanvas.getBoundingClientRect();
+            drawingCanvas.style.width = `${rect.width}px`;
+            drawingCanvas.style.height = `${rect.height}px`;
+            drawingCanvas.style.left = `${imageCanvas.offsetLeft}px`;
+            drawingCanvas.style.top = `${imageCanvas.offsetTop}px`;
+            drawingCanvas.width = rect.width;
+            drawingCanvas.height = rect.height;
         }
 
         function drawImageToCanvasWithFilters(imageToDraw, filtersToApply) {
@@ -907,6 +992,7 @@
             newCurrentImage.src = activeImgData.original.src; 
         });
 
+        // --- RESIZE LOGIC ---
         function resetResizeControlsForActive() {
             resizePercent.value = 100;
             resizePercentValue.textContent = '100';
@@ -1029,6 +1115,7 @@
             }
         });
 
+        // --- CROP LOGIC ---
         startCropBtn.addEventListener('click', () => {
             if (activeImageIndex === -1) {
                 showNotification("Please select an image to crop.", "warning");
@@ -1351,12 +1438,12 @@
             cancelCropMode(); 
         });
 
+        // --- ADJUSTMENT & FILTER LOGIC ---
         function resetAdjustmentControls() {
             brightnessSlider.value = 100; brightnessValue.textContent = '100';
             contrastSlider.value = 100; contrastValue.textContent = '100';
             saturationSlider.value = 100; saturationValue.textContent = '100';
             grayscaleSlider.value = 0; grayscaleValue.textContent = '0';
-            textOverlayInput.value = '';
             tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
         }
         
@@ -1422,6 +1509,7 @@
             newAdjustedImage.src = tempCanvas.toDataURL();
         });
 
+        // --- TRANSFORM LOGIC ---
         function applyTransformation(transformationType) {
             if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
             const activeImgData = imageStore[activeImageIndex];
@@ -1465,87 +1553,269 @@
         flipHorizontalBtn.addEventListener('click', () => applyTransformation('flipHorizontal'));
         flipVerticalBtn.addEventListener('click', () => applyTransformation('flipVertical'));
 
-        addTextButton.addEventListener('click', () => {
-            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) {
-                showNotification('Please select an image first.', 'warning');
-                return;
-            }
-            const text = textOverlayInput.value.trim();
-            if (!text) {
-                showNotification('Please enter text to add.', 'warning');
-                return;
-            }
-            isAddingText = true;
-            imageCanvas.style.cursor = 'text';
-            showNotification('Click on the image to place the text.', 'info');
-            startCropBtn.disabled = true;
+        // --- DRAWING LOGIC ---
+        penToolBtn.addEventListener('click', () => {
+            drawingTool = 'pen';
+            penToolBtn.classList.add('active');
+            arrowToolBtn.classList.remove('active');
+        });
+        arrowToolBtn.addEventListener('click', () => {
+            drawingTool = 'arrow';
+            arrowToolBtn.classList.add('active');
+            penToolBtn.classList.remove('active');
+        });
+        lineWidthSlider.addEventListener('input', () => {
+            lineWidthValue.textContent = lineWidthSlider.value;
         });
 
-        function cancelAddTextMode() {
-            isAddingText = false;
-            imageCanvas.style.cursor = 'grab'; 
-            if (activeImageIndex !== -1) startCropBtn.disabled = false;
-        }
-        
-        imageCanvas.addEventListener('click', (e) => {
-            if (!isAddingText || activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+        startDrawBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1) return;
+            isDrawing = true;
+            drawingCanvas.style.pointerEvents = 'auto';
+            drawingCanvas.style.cursor = 'crosshair';
+            imageCanvas.style.cursor = 'crosshair';
+            startDrawBtn.disabled = true;
+            applyDrawBtn.disabled = false;
+            cancelDrawBtn.disabled = false;
+            // Disable other main actions
+            startCropBtn.disabled = true;
+            applyResizeBtn.disabled = true;
+            penToolBtn.classList.add('active');
+            arrowToolBtn.classList.remove('active');
+        });
 
-            const activeImgData = imageStore[activeImageIndex];
-            const text = textOverlayInput.value.trim();
-            const color = textColorInput.value;
-            const size = parseInt(textSizeInput.value);
-            const font = textFontInput.value;
+        cancelDrawBtn.addEventListener('click', cancelDrawMode);
 
-            if (!text || isNaN(size) || size <=0) {
-                showNotification('Invalid text settings.', 'error');
-                cancelAddTextMode();
-                return;
+        function cancelDrawMode() {
+            isDrawing = false;
+            drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            drawingCanvas.style.pointerEvents = 'none';
+            drawingCanvas.style.cursor = 'default';
+            imageCanvas.style.cursor = 'grab';
+            if (activeImageIndex !== -1) {
+                startDrawBtn.disabled = false;
+                startCropBtn.disabled = false;
+                applyResizeBtn.disabled = false;
             }
+            applyDrawBtn.disabled = true;
+            cancelDrawBtn.disabled = true;
+        }
 
-            const rect = imageCanvas.getBoundingClientRect();
-            const xOnScaledCanvas = e.clientX - rect.left;
-            const yOnScaledCanvas = e.clientY - rect.top;
-
-            const scaleClientToImageX = activeImgData.current.width / imageCanvas.clientWidth;
-            const scaleClientToImageY = activeImgData.current.height / imageCanvas.clientHeight;
-
-            const xOnUnzoomedClient = xOnScaledCanvas / currentZoomLevel;
-            const yOnUnzoomedClient = yOnScaledCanvas / currentZoomLevel;
-            
-            const xOnActualImage = xOnUnzoomedClient * scaleClientToImageX;
-            const yOnActualImage = yOnUnzoomedClient * scaleClientToImageY;
-            const scaledSizeOnImage = size * scaleClientToImageX;
+        applyDrawBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
 
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = activeImgData.current.width;
             tempCanvas.height = activeImgData.current.height;
             const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(activeImgData.current, 0, 0); 
-            
-            tempCtx.fillStyle = color;
-            tempCtx.font = `${scaledSizeOnImage}px ${font}`;
-            tempCtx.textAlign = 'left'; 
-            tempCtx.textBaseline = 'top'; 
-            tempCtx.fillText(text, xOnActualImage, yOnActualImage);
+            tempCtx.drawImage(activeImgData.current, 0, 0);
+            tempCtx.drawImage(drawingCanvas, 0, 0, drawingCanvas.width, drawingCanvas.height, 0, 0, tempCanvas.width, tempCanvas.height);
 
-            const newImageWithText = new Image();
-            newImageWithText.onload = () => {
-                activeImgData.current = newImageWithText;
-                saveState("Text Added");
+            const newImageWithDrawing = new Image();
+            newImageWithDrawing.onload = () => {
+                activeImgData.current = newImageWithDrawing;
+                saveState("Drawing Applied");
                 setActiveImage(activeImageIndex);
-                showNotification('Text added successfully!', 'success');
+                showNotification('Drawing applied successfully!', 'success');
             };
-            newImageWithText.onerror = () => showNotification('Error adding text to image.', 'error');
-            newImageWithText.src = tempCanvas.toDataURL();
-            
-            cancelAddTextMode();
+            newImageWithDrawing.onerror = () => showNotification('Error applying drawing.', 'error');
+            newImageWithDrawing.src = tempCanvas.toDataURL();
+
+            cancelDrawMode();
         });
 
+        drawingCanvas.addEventListener('mousedown', (e) => {
+            if (!isDrawing) return;
+            isPainting = true;
+            const rect = drawingCanvas.getBoundingClientRect();
+            startPaintPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            lastPaintPoint = { ...startPaintPoint };
 
+            if (drawingTool === 'pen') {
+                drawCtx.beginPath();
+                drawCtx.moveTo(lastPaintPoint.x, lastPaintPoint.y);
+            }
+        });
+
+        drawingCanvas.addEventListener('mousemove', (e) => {
+            if (!isPainting) return;
+            const rect = drawingCanvas.getBoundingClientRect();
+            const currentPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+            if (drawingTool === 'pen') {
+                drawCtx.strokeStyle = drawColorInput.value;
+                drawCtx.lineWidth = lineWidthSlider.value;
+                drawCtx.lineCap = 'round';
+                drawCtx.lineJoin = 'round';
+                drawCtx.lineTo(currentPoint.x, currentPoint.y);
+                drawCtx.stroke();
+                lastPaintPoint = currentPoint;
+            } else if (drawingTool === 'arrow') {
+                drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                drawArrow(drawCtx, startPaintPoint.x, startPaintPoint.y, currentPoint.x, currentPoint.y, drawColorInput.value, lineWidthSlider.value);
+            }
+        });
+
+        drawingCanvas.addEventListener('mouseup', () => {
+            isPainting = false;
+            if (drawingTool === 'pen') {
+                drawCtx.closePath();
+            }
+        });
+
+        drawingCanvas.addEventListener('mouseleave', () => {
+            isPainting = false;
+            if (drawingTool === 'pen') {
+                drawCtx.closePath();
+            }
+        });
+
+        function drawArrow(ctx, fromx, fromy, tox, toy, color, width) {
+            const headlen = Math.max(10, width * 2);
+            const dx = tox - fromx;
+            const dy = toy - fromy;
+            const angle = Math.atan2(dy, dx);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(fromx, fromy);
+            ctx.lineTo(tox, toy);
+            ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(tox, toy);
+            ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+
+        // --- OPTIMIZATION LOGIC ---
+        async function applyOptimization(options) {
+            if (activeImageIndex === -1) return;
+
+            optimizeLoader.style.display = 'flex';
+            const { name, ...otherOptions } = options;
+            const format = otherOptions.format;
+            let fileExtension = format.split('/')[1];
+            if (format === 'image/jpeg') fileExtension = 'jpg';
+
+            try {
+                const activeImgData = imageStore[activeImageIndex];
+                const dataUrl = await processImageForOptimization(activeImgData.current, otherOptions);
+
+                if (!dataUrl) {
+                    throw new Error("Optimization failed to produce an image.");
+                }
+
+                // --- Download Logic ---
+                const blob = await dataURLtoBlob(dataUrl);
+                const finalFileName = `${activeImgData.name}_${name.toLowerCase().replace(/\s+/g, '-')}.${fileExtension}`;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = finalFileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+                // --- End Download Logic ---
+
+                // Also update the image in the editor
+                const newOptimizedImage = new Image();
+                newOptimizedImage.onload = () => {
+                    activeImgData.current = newOptimizedImage;
+                    saveState(`Optimized for ${name}`);
+                    setActiveImage(activeImageIndex, false); // Don't save state again
+                    showNotification(`Optimized for ${name} and downloaded!`, 'success');
+                    optimizeLoader.style.display = 'none';
+                };
+                newOptimizedImage.onerror = () => { throw new Error("Could not load optimized image data.") };
+                newOptimizedImage.src = dataUrl;
+
+            } catch (error) {
+                console.error("Optimization Error:", error);
+                showNotification(`Error during optimization: ${error.message}`, 'error');
+                optimizeLoader.style.display = 'none';
+            }
+        }
+
+        async function processImageForOptimization(img, { maxWidth, maxHeight, format, quality, targetKb }) {
+            let newW = img.width;
+            let newH = img.height;
+            const ratio = img.width / img.height;
+
+            if (maxWidth && maxHeight) {
+                if (newW > maxWidth || newH > maxHeight) {
+                     if (newW > newH) { // Landscape or square
+                        if (newW > maxWidth) {
+                            newH = Math.round(maxWidth / ratio);
+                            newW = maxWidth;
+                        }
+                    } else { // Portrait
+                        if (newH > maxHeight) {
+                            newW = Math.round(maxHeight * ratio);
+                            newH = maxHeight;
+                        }
+                    }
+                }
+            } else if (maxWidth && newW > maxWidth) {
+                newW = maxWidth;
+                newH = Math.round(newW / ratio);
+            } else if (maxHeight && newH > maxHeight) {
+                newH = maxHeight;
+                newW = Math.round(newH * ratio);
+            }
+            newW = Math.round(newW);
+            newH = Math.round(newH);
+
+            const resizeCanvas = document.createElement('canvas');
+            resizeCanvas.width = newW;
+            resizeCanvas.height = newH;
+            const resizeCtx = resizeCanvas.getContext('2d');
+            resizeCtx.drawImage(img, 0, 0, newW, newH);
+
+            if (targetKb && (format === 'image/jpeg' || format === 'image/webp')) {
+                let currentQuality = quality || 0.9;
+                let minQ = 0.01, maxQ = 1.0;
+                let bestDataUrl = '';
+                let bestBlobSizeDiff = Infinity;
+                
+                const highQualityDataUrl = resizeCanvas.toDataURL(format, maxQ);
+                const highQualityBlob = await dataURLtoBlob(highQualityDataUrl);
+                if (highQualityBlob.size / 1024 <= targetKb) {
+                    return highQualityDataUrl;
+                }
+
+                for (let i = 0; i < 8; i++) {
+                    const dataUrl = resizeCanvas.toDataURL(format, currentQuality);
+                    const tempBlob = await dataURLtoBlob(dataUrl);
+                    const currentSizeKB = tempBlob.size / 1024;
+                    const diff = currentSizeKB - targetKb;
+
+                    if (currentSizeKB <= targetKb) {
+                        if (Math.abs(diff) < bestBlobSizeDiff) {
+                            bestBlobSizeDiff = Math.abs(diff);
+                            bestDataUrl = dataUrl;
+                        }
+                        minQ = currentQuality;
+                    } else {
+                        maxQ = currentQuality;
+                    }
+                    if ((maxQ - minQ) < 0.02) break;
+                    currentQuality = (minQ + maxQ) / 2;
+                }
+                return bestDataUrl || resizeCanvas.toDataURL(format, minQ);
+            } else {
+                return resizeCanvas.toDataURL(format, quality);
+            }
+        }
+
+        optimizeWebBtn.addEventListener('click', () => applyOptimization({ name: 'Web', maxWidth: 1920, maxHeight: 1920, format: 'image/webp', quality: 0.8 }));
+        optimizeShopifyBtn.addEventListener('click', () => applyOptimization({ name: 'Shopify', maxWidth: 2000, maxHeight: 2000, format: 'image/jpeg', quality: 0.9 }));
+        optimizeFirebaseBtn.addEventListener('click', () => applyOptimization({ name: 'Firebase', maxWidth: 1000, maxHeight: 1000, format: 'image/jpeg', quality: 0.9, targetKb: 300 }));
+
+
+        // --- EXPORT LOGIC ---
         function updateQualityVisibility() {
             qualityContainer.style.display = (fileFormatSelect.value === 'image/png') ? 'none' : 'block';
             targetFileSizeInput.disabled = (fileFormatSelect.value === 'image/png');
-
         }
         fileFormatSelect.addEventListener('change', updateQualityVisibility);
         qualitySlider.addEventListener('input', () => {
@@ -1553,62 +1823,24 @@
              if(qualitySpan) qualitySpan.textContent = qualitySlider.value;
         });
 
-
         async function exportSingleImage(imgData, baseFilename, exportFormat, exportQuality, targetKB) { 
             let fileExtension = exportFormat.split('/')[1];
             if (exportFormat === 'image/jpeg') fileExtension = 'jpg';
             const finalFileName = `${baseFilename}.${fileExtension}`;
 
-            const exportCanvas = document.createElement('canvas');
-            exportCanvas.width = imgData.current.width;
-            exportCanvas.height = imgData.current.height;
-            const exportCtx = exportCanvas.getContext('2d');
-            exportCtx.drawImage(imgData.current, 0, 0); 
-
-            let blob;
-            if (!isNaN(targetKB) && targetKB > 0 && (exportFormat === 'image/jpeg' || exportFormat === 'image/webp')) {
-                let currentQuality = exportQuality; 
-                let minQuality = 0.01; let maxQuality = 1.0; 
-                let bestBlob = null; let bestBlobSizeDiff = Infinity;
-                const MAX_ITERATIONS = 10;
-
-                for (let i = 0; i < MAX_ITERATIONS; i++) { 
-                    const dataUrl = exportCanvas.toDataURL(exportFormat, currentQuality); 
-                    const tempBlob = await dataURLtoBlob(dataUrl); 
-                    const currentSizeKB = tempBlob.size / 1024;
-                    const diff = currentSizeKB - targetKB;
-
-                    if (Math.abs(diff) < bestBlobSizeDiff && currentSizeKB <= targetKB * 1.05) {
-                        bestBlob = tempBlob;
-                        bestBlobSizeDiff = Math.abs(diff);
-                    }
-                    
-                    if (Math.abs(diff / targetKB) < 0.05 && currentSizeKB <= targetKB * 1.05) { 
-                        bestBlob = tempBlob; 
-                        break;
-                    }
-
-                    if (diff > 0) { 
-                        maxQuality = currentQuality;
-                    } else { 
-                        minQuality = currentQuality;
-                    }
-                    
-                    if ((maxQuality - minQuality) < 0.01) break; 
-                    
-                    currentQuality = (minQuality + maxQuality) / 2;
-                }
-                blob = bestBlob || (await dataURLtoBlob(exportCanvas.toDataURL(exportFormat, exportQuality))); 
-                if (bestBlob) {
-                    showNotification(`Achieved ~${formatBytes(bestBlob.size)} for target ${targetKB}KB.`, 'info', 2000);
-                } else {
-                    showNotification(`Could not meet target size precisely. Got ${formatBytes(blob.size)}.`, 'warning', 2000);
-                }
-
-            } else {
-                const dataUrl = exportCanvas.toDataURL(exportFormat, (exportFormat === 'image/png') ? undefined : exportQuality); 
-                blob = await dataURLtoBlob(dataUrl);
+            const dataUrl = await processImageForOptimization(imgData.current, {
+                maxWidth: imgData.current.width,
+                maxHeight: imgData.current.height,
+                format: exportFormat,
+                quality: exportQuality,
+                targetKb: targetKB
+            });
+            
+            if (!dataUrl) {
+                throw new Error("Failed to generate image for download.");
             }
+
+            const blob = await dataURLtoBlob(dataUrl);
             
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -1631,7 +1863,6 @@
             const format = fileFormatSelect.value;
             let quality = parseFloat(qualitySlider.value);
             const targetSizeKB = parseFloat(targetFileSizeInput.value);
-
 
             try {
                 const exportedName = await exportSingleImage(activeImgData, baseName, format, quality, targetSizeKB);
@@ -1660,7 +1891,6 @@
             const globalQuality = parseFloat(qualitySlider.value);
             const globalTargetSizeKB = parseFloat(targetFileSizeInput.value);
 
-
             for (let i = 0; i < imageStore.length; i++) {
                 const imgData = imageStore[i];
                 exportMessage.textContent = `Processing image ${i + 1} of ${imageStore.length}: ${imgData.name}.${imgData.ext}`;
@@ -1682,6 +1912,7 @@
             showNotification(finalMessage, errorCount > 0 ? 'warning' : (successCount > 0 ? 'success': 'info'));
         });
         
+        // --- WINDOW RESIZE ---
         const debouncedRedraw = debounce(() => {
             if (activeImageIndex !== -1 && imageStore[activeImageIndex]) { 
                 drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters); 
