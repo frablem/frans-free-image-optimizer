@@ -17,3 +17,7 @@ The about page lives in `about/index.html` and describes Freemaged's privacy foc
 ## Running
 
 No build step is required. Open `index.html` directly in a browser or serve the directory with any static file server.
+
+## Open Source
+
+Freemaged is an open source project. You can find the code on [GitHub](https://github.com/frablem/freemaged).
