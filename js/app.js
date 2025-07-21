@@ -19,6 +19,9 @@
         const originalFileSizeEl = document.getElementById('originalFileSize');
         const currentDimensionsEl = document.getElementById('currentDimensions');
 
+        const togglePanelBtn = document.getElementById('togglePanelBtn');
+        const controlPanel = document.getElementById('controlPanel');
+
         // Tabs
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -113,7 +116,15 @@
         // --- INITIALIZATION ---
         disableAllControls(); 
         setupTabs(); 
-        updateQualityVisibility(); 
+        updateQualityVisibility();
+        updatePanelVisibilityForViewport();
+
+        togglePanelBtn.addEventListener('click', () => {
+            controlPanel.classList.toggle('hidden');
+            togglePanelBtn.textContent = controlPanel.classList.contains('hidden') ? 'Show Tools' : 'Hide Tools';
+        });
+
+        window.addEventListener('resize', updatePanelVisibilityForViewport);
 
         // --- UTILITY FUNCTIONS ---
         function showNotification(message, type = 'success', duration = 3000) {
@@ -1457,6 +1468,17 @@
             exportMessage.textContent = finalMessage;
             showNotification(finalMessage, errorCount > 0 ? 'warning' : (successCount > 0 ? 'success': 'info'));
         });
+
+        function updatePanelVisibilityForViewport() {
+            const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+            if (isDesktop) {
+                controlPanel.classList.remove('hidden');
+                togglePanelBtn.classList.add('hidden');
+            } else {
+                togglePanelBtn.classList.remove('hidden');
+                togglePanelBtn.textContent = controlPanel.classList.contains('hidden') ? 'Show Tools' : 'Hide Tools';
+            }
+        }
        
         // --- WINDOW RESIZE ---
         const debouncedRedraw = debounce(() => {
