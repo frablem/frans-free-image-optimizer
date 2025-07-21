@@ -117,20 +117,6 @@
         disableAllControls(); 
         setupTabs(); 
         updateQualityVisibility();
-        updatePanelVisibilityForViewport();
-
-        function toggleControlPanel() {
-            controlPanel.classList.toggle('hidden');
-            togglePanelBtn.textContent = controlPanel.classList.contains('hidden') ? 'Show Tools' : 'Hide Tools';
-        }
-
-        togglePanelBtn.addEventListener('click', toggleControlPanel);
-        togglePanelBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            toggleControlPanel();
-        }, { passive: false });
-
-        window.addEventListener('resize', updatePanelVisibilityForViewport);
 
         // --- UTILITY FUNCTIONS ---
         function showNotification(message, type = 'success', duration = 3000) {
@@ -1475,16 +1461,6 @@
             showNotification(finalMessage, errorCount > 0 ? 'warning' : (successCount > 0 ? 'success': 'info'));
         });
 
-        function updatePanelVisibilityForViewport() {
-            const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-            if (isDesktop) {
-                controlPanel.classList.remove('hidden');
-                togglePanelBtn.classList.add('hidden');
-            } else {
-                togglePanelBtn.classList.remove('hidden');
-                togglePanelBtn.textContent = controlPanel.classList.contains('hidden') ? 'Show Tools' : 'Hide Tools';
-            }
-        }
        
         // --- WINDOW RESIZE ---
         const debouncedRedraw = debounce(() => {
