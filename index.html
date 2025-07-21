@@ -25,7 +25,9 @@
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col md:flex-row h-screen overflow-hidden">
 
-    <div class="w-full md:w-[21.6rem] bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-[60vh] md:h-screen">
+    <button id="togglePanelBtn" class="md:hidden bg-blue-600 text-white px-3 py-2 m-2 rounded self-end">Hide Tools</button>
+
+    <div id="controlPanel" class="w-full md:w-[21.6rem] bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-[60vh] md:h-screen">
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold text-blue-400">Freemaged</h1>
             <div class="flex items-center space-x-2">

@@ -17,3 +17,8 @@ The about page lives in `about/index.html` and describes Freemaged's privacy-foc
 ## Running
 
 No build step is required. Open `index.html` directly in a browser or serve the directory with any static file server.
+
+## Version History
+
+- **v1.1** – Improved SEO with additional meta tags and sitemap support.
+- **v1.2** – Enhanced mobile experience by allowing the tool panel to be hidden on small screens.
