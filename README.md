@@ -1,6 +1,6 @@
 # Freemaged
 
-Freemaged is a lightweight browser based image editor. All processing happens in your browser so no images are uploaded to a server. Simply open `index.html` in any modern browser to start editing.
+Freemaged is a lightweight browser-based image editor. All processing happens in your browser so no images are uploaded to a server. Simply open `index.html` in any modern browser to start editing.
 
 ## Development
 
@@ -12,7 +12,7 @@ The project uses [Tailwind CSS](https://tailwindcss.com) and vanilla JavaScript.
 
 ## About Page
 
-The about page lives in `about/index.html` and describes Freemaged's privacy focused approach. A link is provided from the editor to this page.
+The about page lives in `about/index.html` and describes Freemaged's privacy-focused approach. A link is provided from the editor to this page.
 
 ## Running
 
