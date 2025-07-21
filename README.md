@@ -22,3 +22,4 @@ No build step is required. Open `index.html` directly in a browser or serve the 
 
 - **v1.1** – Improved SEO with additional meta tags and sitemap support.
 - **v1.2** – Enhanced mobile experience by allowing the tool panel to be hidden on small screens.
+- **v1.2.1** – Fixed mobile toggle reliability on touch devices.

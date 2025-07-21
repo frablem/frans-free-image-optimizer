@@ -119,10 +119,16 @@
         updateQualityVisibility();
         updatePanelVisibilityForViewport();
 
-        togglePanelBtn.addEventListener('click', () => {
+        function toggleControlPanel() {
             controlPanel.classList.toggle('hidden');
             togglePanelBtn.textContent = controlPanel.classList.contains('hidden') ? 'Show Tools' : 'Hide Tools';
-        });
+        }
+
+        togglePanelBtn.addEventListener('click', toggleControlPanel);
+        togglePanelBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            toggleControlPanel();
+        }, { passive: false });
 
         window.addEventListener('resize', updatePanelVisibilityForViewport);
 
