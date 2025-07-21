@@ -64,7 +64,6 @@
         const drawColorInput = document.getElementById('drawColor');
         const lineWidthSlider = document.getElementById('lineWidth');
         const lineWidthValue = document.getElementById('lineWidthValue');
-        const startDrawBtn = document.getElementById('startDraw');
         const applyDrawBtn = document.getElementById('applyDraw');
         const cancelDrawBtn = document.getElementById('cancelDraw');
 
@@ -108,8 +107,9 @@
         let isDrawing = false;
         let isPainting = false;
         let drawingTool = 'pen'; // 'pen' or 'arrow'
-        let lastPaintPoint = { x: 0, y: 0 };
-        let startPaintPoint = { x: 0, y: 0 };
+       let lastPaintPoint = { x: 0, y: 0 };
+       let startPaintPoint = { x: 0, y: 0 };
+        let drawingSnapshot = null;
 
         let tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
 
@@ -230,8 +230,9 @@
                    
                     if (button.dataset.tab !== 'crop' && isCropping) cancelCropMode();
                     if (button.dataset.tab !== 'draw' && isDrawing) cancelDrawMode();
+                    if (button.dataset.tab === 'draw' && !isDrawing) enableDrawMode();
                     if (button.dataset.tab !== 'adjust') {
-                        resetTempAdjustmentFilters(false); 
+                        resetTempAdjustmentFilters(false);
                     } else {
                         if (activeImageIndex !== -1) {
                             drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
@@ -249,7 +250,7 @@
                 resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, 
                 fileFormatSelect, qualitySlider, targetFileSizeInput, aspectRatioSelect,
                 brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider,
-                penToolBtn, arrowToolBtn, drawColorInput, lineWidthSlider, startDrawBtn,
+                penToolBtn, arrowToolBtn, drawColorInput, lineWidthSlider,
                 applyDrawBtn, cancelDrawBtn, optimizeWebBtn, optimizeShopifyBtn, optimizeFirebaseBtn
             ];
             controls.forEach(el => el.disabled = true);
@@ -265,7 +266,7 @@
                 resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, 
                 fileFormatSelect, qualitySlider, targetFileSizeInput, aspectRatioSelect,
                 brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider,
-                penToolBtn, arrowToolBtn, drawColorInput, lineWidthSlider, startDrawBtn,
+                penToolBtn, arrowToolBtn, drawColorInput, lineWidthSlider,
                 optimizeWebBtn, optimizeShopifyBtn, optimizeFirebaseBtn
             ];
 
@@ -931,6 +932,36 @@
             const unzoomedCanvasClientWidth = imageCanvas.clientWidth;
             const unzoomedCanvasClientHeight = imageCanvas.clientHeight;
 
+            const keepRatio = aspectRatioSelect.value !== 'freeform';
+            let ratio = newWidth / newHeight;
+            if (keepRatio) {
+                if (aspectRatioSelect.value === 'original') {
+                    ratio = activeImgData.current.width / activeImgData.current.height;
+                } else {
+                    const parts = aspectRatioSelect.value.split(':').map(Number);
+                    ratio = parts[0] / parts[1];
+                }
+            }
+
+            if (newX < 0) {
+                newWidth += newX;
+                newX = 0;
+                if (keepRatio) newHeight = newWidth / ratio;
+            }
+            if (newY < 0) {
+                newHeight += newY;
+                newY = 0;
+                if (keepRatio) newWidth = newHeight * ratio;
+            }
+            if (newX + newWidth > unzoomedCanvasClientWidth) {
+                newWidth = unzoomedCanvasClientWidth - newX;
+                if (keepRatio) newHeight = newWidth / ratio;
+            }
+            if (newY + newHeight > unzoomedCanvasClientHeight) {
+                newHeight = unzoomedCanvasClientHeight - newY;
+                if (keepRatio) newWidth = newHeight * ratio;
+            }
+
             newX = Math.max(0, Math.min(newX, unzoomedCanvasClientWidth - newWidth));
             newY = Math.max(0, Math.min(newY, unzoomedCanvasClientHeight - newHeight));
             newWidth = Math.min(newWidth, unzoomedCanvasClientWidth - newX);
@@ -1117,21 +1148,20 @@
             lineWidthValue.textContent = lineWidthSlider.value;
         });
 
-        startDrawBtn.addEventListener('click', () => {
+        function enableDrawMode() {
             if (activeImageIndex === -1) return;
             isDrawing = true;
             drawingCanvas.style.pointerEvents = 'auto';
             drawingCanvas.style.cursor = 'crosshair';
             imageCanvas.style.cursor = 'crosshair';
-            startDrawBtn.disabled = true;
-            applyDrawBtn.disabled = false;
-            cancelDrawBtn.disabled = false;
-            // Disable other main actions
             startCropBtn.disabled = true;
             applyResizeBtn.disabled = true;
+            applyDrawBtn.disabled = false;
+            cancelDrawBtn.disabled = false;
             penToolBtn.classList.add('active');
             arrowToolBtn.classList.remove('active');
-        });
+        }
+
 
         cancelDrawBtn.addEventListener('click', cancelDrawMode);
 
@@ -1142,7 +1172,6 @@
             drawingCanvas.style.cursor = 'default';
             imageCanvas.style.cursor = 'grab';
             if (activeImageIndex !== -1) {
-                startDrawBtn.disabled = false;
                 startCropBtn.disabled = false;
                 applyResizeBtn.disabled = false;
             }
@@ -1180,8 +1209,13 @@
             const rect = drawingCanvas.getBoundingClientRect();
             startPaintPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
             lastPaintPoint = { ...startPaintPoint };
+            drawingSnapshot = drawCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
 
             if (drawingTool === 'pen') {
+                drawCtx.strokeStyle = drawColorInput.value;
+                drawCtx.lineWidth = lineWidthSlider.value;
+                drawCtx.lineCap = 'round';
+                drawCtx.lineJoin = 'round';
                 drawCtx.beginPath();
                 drawCtx.moveTo(lastPaintPoint.x, lastPaintPoint.y);
             }
@@ -1193,30 +1227,38 @@
             const currentPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
             if (drawingTool === 'pen') {
-                drawCtx.strokeStyle = drawColorInput.value;
-                drawCtx.lineWidth = lineWidthSlider.value;
-                drawCtx.lineCap = 'round';
-                drawCtx.lineJoin = 'round';
                 drawCtx.lineTo(currentPoint.x, currentPoint.y);
                 drawCtx.stroke();
                 lastPaintPoint = currentPoint;
             } else if (drawingTool === 'arrow') {
-                drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                drawCtx.putImageData(drawingSnapshot, 0, 0);
                 drawArrow(drawCtx, startPaintPoint.x, startPaintPoint.y, currentPoint.x, currentPoint.y, drawColorInput.value, lineWidthSlider.value);
             }
         });
 
-        drawingCanvas.addEventListener('mouseup', () => {
+        drawingCanvas.addEventListener('mouseup', (e) => {
+            if (!isPainting) return;
             isPainting = false;
+            const rect = drawingCanvas.getBoundingClientRect();
+            const endPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
             if (drawingTool === 'pen') {
                 drawCtx.closePath();
+                drawingSnapshot = drawCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+            } else if (drawingTool === 'arrow') {
+                drawCtx.putImageData(drawingSnapshot, 0, 0);
+                drawArrow(drawCtx, startPaintPoint.x, startPaintPoint.y, endPoint.x, endPoint.y, drawColorInput.value, lineWidthSlider.value);
+                drawingSnapshot = drawCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
             }
         });
 
         drawingCanvas.addEventListener('mouseleave', () => {
+            if (!isPainting) return;
             isPainting = false;
             if (drawingTool === 'pen') {
                 drawCtx.closePath();
+                drawingSnapshot = drawCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+            } else if (drawingTool === 'arrow') {
+                drawCtx.putImageData(drawingSnapshot, 0, 0);
             }
         });
 

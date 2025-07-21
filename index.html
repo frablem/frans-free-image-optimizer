@@ -25,7 +25,7 @@
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col md:flex-row h-screen overflow-hidden">
 
-    <button id="togglePanelBtn" class="md:hidden bg-blue-600 text-white px-3 py-2 m-2 rounded self-end">Hide Tools</button>
+    <button id="togglePanelBtn" class="md:hidden bg-blue-600 text-white px-3 py-2 m-2 rounded self-end"><i class="fas fa-bars"></i></button>
 
     <div id="controlPanel" class="w-full md:w-[21.6rem] bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-[60vh] md:h-screen">
         <div class="flex justify-between items-center mb-4">
@@ -168,7 +168,6 @@
                     <input type="range" id="lineWidth" min="1" max="50" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-400 disabled:cursor-not-allowed" disabled>
                 </div>
             </div>
-            <button id="startDraw" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Activate drawing mode"><i class="fas fa-paint-brush mr-2"></i>Start Drawing</button>
             <button id="applyDraw" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled title="Apply drawing to image">Apply Drawing</button>
             <button id="cancelDraw" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled title="Cancel current drawing">Cancel Drawing</button>
         </div>
@@ -250,6 +249,7 @@
                 <p>Made by <a href="https://frandez.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-300">frandez.com</a></p>
                 <p class="mt-1">This exists because all other sites are greedy.</p>
                 <p class="mt-1"><a href="about/" class="underline hover:text-blue-300">About this tool.</a></p>
+                <p class="mt-1">Version 1.3</p>
             </div>
         </div>
     </div>

@@ -5,13 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!toggleBtn || !controlPanel) return;
 
-  function updateLabel() {
-    toggleBtn.textContent = controlPanel.classList.contains('hidden') ? 'Show Tools' : 'Hide Tools';
-  }
-
   function togglePanel() {
     controlPanel.classList.toggle('hidden');
-    updateLabel();
   }
 
   toggleBtn.addEventListener('click', togglePanel);
@@ -27,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleBtn.classList.add('hidden');
     } else {
       toggleBtn.classList.remove('hidden');
-      updateLabel();
     }
   }
 
