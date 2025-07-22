@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freemaged - Free Browser Image Editor</title>
+    <title>Freemaged - Free Browser Image Editor v1.3</title>
     <meta name="description" content="Freemaged is a free, privacy-focused browser image editor that runs entirely in your browser.">
     <meta name="keywords" content="image editor, online image editor, privacy, open source, freemaged">
     <link rel="canonical" href="https://freemaged.com/">
@@ -21,18 +21,226 @@
     <link rel="icon" href="fav.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none; 
+        }
+        /* Mobile Menu Styling */
+        #controlPanel.mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            z-index: 50;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        #controlPanel.mobile-menu.open {
+            transform: translateX(0);
+        }
+        #menuBackdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 49;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        #menuBackdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .control-panel {
+            overflow-y: auto;
+        }
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+            position: relative; 
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.2s ease-out;
+        }
+        #imageCanvas {
+             cursor: grab;
+        }
+        #drawingCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none; /* Initially not interactive */
+            z-index: 10;
+        }
+       
+        #crop-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Pass clicks through unless cropping */
+            z-index: 20;
+        }
+        .crop-selection {
+            position: absolute;
+            border: 2px dashed #3b82f6;
+            box-sizing: border-box;
+            cursor: move;
+            pointer-events: all; /* Capture events for moving/resizing */
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+        .crop-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #3b82f6;
+            border: 2px solid white;
+            border-radius: 50%;
+            z-index: 30;
+        }
+        .crop-handle.nw { top: -7px; left: -7px; cursor: nwse-resize; }
+        .crop-handle.ne { top: -7px; right: -7px; cursor: nesw-resize; }
+        .crop-handle.sw { bottom: -7px; left: -7px; cursor: nesw-resize; }
+        .crop-handle.se { bottom: -7px; right: -7px; cursor: nwse-resize; }
+        .crop-handle.n { top: -7px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+        .crop-handle.s { bottom: -7px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+        .crop-handle.w { top: 50%; left: -7px; transform: translateY(-50%); cursor: ew-resize; }
+        .crop-handle.e { top: 50%; right: -7px; transform: translateY(-50%); cursor: ew-resize; }
+        
+        .crop-grid {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            pointer-events: none;
+        }
+        .crop-grid-cell {
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .tab-button {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .loader {
+            border: 4px solid #4b5563;
+            border-top: 4px solid #60a5fa;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .control-panel::-webkit-scrollbar { width: 8px; }
+        .control-panel::-webkit-scrollbar-track { background: #374151; border-radius: 10px; } 
+        .control-panel::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; } 
+        .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; } 
+
+        input[type="number"], input[type="text"], select, input[type="range"], input[type="color"] {
+            background-color: #374151;
+            color: #f3f4f6;
+            border-color: #4b5563;
+            padding: 0.5rem;
+        }
+        input[type="number"]::placeholder, input[type="text"]::placeholder {
+            color: #9ca3af;
+        }
+        
+        #imageSelectorList button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 8px 12px; 
+            border-bottom: 1px solid #4b5563;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-radius: 4px;
+            margin-bottom: 2px;
+        }
+        #imageSelectorList button:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        #imageSelectorList button:hover {
+            background-color: #4b5563;
+        }
+        #imageSelectorList button.active-image {
+            background-color: #2563eb;
+            color: white;
+            font-weight: 600;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .notification.success { background-color: #10B981; color: white; }
+        .notification.error { background-color: #EF4444; color: white; }
+        .notification.warning { background-color: #F59E0B; color: white; }
+        .notification.info { background-color: #3B82F6; color: white; }
+        
+        .tool-button.active {
+            background-color: #2563eb;
+            color: white;
+        }
+    </style>
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col md:flex-row h-screen overflow-hidden">
 
-    <button id="togglePanelBtn" class="md:hidden bg-blue-600 text-white px-3 py-2 m-2 rounded self-end">Hide Tools</button>
+    <!-- Hamburger Menu Button (Mobile Only) -->
+    <button id="hamburgerBtn" class="md:hidden absolute top-4 left-4 z-50 bg-blue-600/80 text-white p-2 rounded-md">
+        <i class="fas fa-bars fa-lg"></i>
+    </button>
+    
+    <!-- Menu Backdrop (Mobile Only) -->
+    <div id="menuBackdrop"></div>
 
-    <div id="controlPanel" class="w-full md:w-[21.6rem] bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-[60vh] md:h-screen">
+    <!-- Control Panel / Mobile Menu -->
+    <div id="controlPanel" class="w-full max-w-[21.6rem] md:w-[21.6rem] bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-screen">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-blue-400">Freemaged</h1>
+            <h1 class="text-2xl font-bold text-blue-400">Freemaged <span class="text-xs align-top text-gray-400">v1.3</span></h1>
             <div class="flex items-center space-x-2">
                 <button id="undoButton" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" title="Undo Last Action (Ctrl+Z)" disabled>
                     <i class="fas fa-undo fa-lg"></i>
+                </button>
+                <button id="redoButton" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" title="Redo Last Action (Ctrl+Y)" disabled>
+                    <i class="fas fa-redo fa-lg"></i>
                 </button>
                 <a href="#" onclick="location.reload(); return false;" class="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-700" title="Refresh Page & Clear All">
                     <i class="fas fa-sync-alt fa-lg"></i>
@@ -41,9 +249,14 @@
         </div>
 
         <div class="mb-4">
-            <label for="imageUpload" class="block text-sm font-medium text-gray-300 mb-1">Upload Image(s) or Paste (Ctrl+V)</label>
-            <input type="file" id="imageUpload" accept="image/*" multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-800 file:text-blue-300 hover:file:bg-blue-700 cursor-pointer">
-            <p id="loadedFileName" class="text-xs text-gray-500 mt-1 truncate"></p>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Upload Image(s) or Paste (Ctrl+V)</label>
+            <div class="flex items-center space-x-4">
+                 <label class="text-sm font-semibold bg-blue-800 text-blue-300 hover:bg-blue-700 cursor-pointer py-2 px-4 rounded-md whitespace-nowrap">
+                     Choose Files
+                     <input type="file" id="imageUpload" accept="image/*" multiple class="hidden">
+                 </label>
+                 <p id="loadedFileName" class="text-sm text-gray-400 truncate flex-grow"></p>
+            </div>
         </div>
 
         <div id="imageSelectorContainer" class="mb-4 hidden">
@@ -51,7 +264,7 @@
             <div id="imageSelectorList" class="max-h-48 overflow-y-auto bg-gray-700/50 rounded-md p-2 space-y-1">
             </div>
         </div>
-       
+        
         <button id="resetImage" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mb-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Reset active image to its original state">
             <i class="fas fa-undo mr-2"></i>Reset Active Image
         </button>
@@ -112,7 +325,6 @@
                     <input type="number" id="cropHeight" class="mt-1 block w-full rounded-md border-gray-600 shadow-sm sm:text-sm p-2 bg-gray-600" readonly>
                 </div>
             </div>
-            <button id="startCrop" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Activate crop selection tool"><i class="fas fa-crop-alt mr-2"></i>Start/Adjust Crop</button>
             <button id="applyCrop" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Apply current crop selection">Apply Crop</button>
             <button id="cancelCrop" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Cancel current crop operation">Cancel Crop Mode</button>
         </div>
@@ -161,14 +373,13 @@
             <div class="grid grid-cols-2 gap-2 items-center">
                 <div>
                     <label for="drawColor" class="block text-xs font-medium text-gray-300">Color</label>
-                    <input type="color" id="drawColor" value="#EF4444" class="w-full h-10 rounded-md disabled:cursor-not-allowed" disabled>
+                    <input type="color" id="drawColor" value="#EF4444" class="w-full h-10 rounded-md disabled:cursor-not-allowed">
                 </div>
                 <div>
                     <label for="lineWidth" class="block text-xs font-medium text-gray-300">Line Width: <span id="lineWidthValue">5</span>px</label>
                     <input type="range" id="lineWidth" min="1" max="50" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-400 disabled:cursor-not-allowed" disabled>
                 </div>
             </div>
-            <button id="startDraw" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Activate drawing mode"><i class="fas fa-paint-brush mr-2"></i>Start Drawing</button>
             <button id="applyDraw" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled title="Apply drawing to image">Apply Drawing</button>
             <button id="cancelDraw" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2" disabled title="Cancel current drawing">Cancel Drawing</button>
         </div>
@@ -189,11 +400,17 @@
                     </button>
                     <p class="text-xs text-gray-400 -mt-1 px-1">Resizes image to a max dimension of 2000px, ideal for product images. Uses high-quality JPG.</p>
                 </div>
-                 <div class="space-y-2 mt-3">
+                <div class="space-y-2 mt-3">
                     <button id="optimizeFirebase" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                         Optimize & Download for Firebase
                     </button>
                     <p class="text-xs text-gray-400 -mt-1 px-1">Resizes to max 1000px and compresses to under 300KB JPG, great for storage and fast loading.</p>
+                </div>
+                 <div class="space-y-2 mt-3">
+                    <button id="optimizeMobile" class="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Optimize & Download for Mobile
+                    </button>
+                    <p class="text-xs text-gray-400 -mt-1 px-1">Resizes to max 1200px and compresses to under 1MB JPG, ideal for mobile sharing.</p>
                 </div>
             </div>
             <div id="optimizeLoader" class="hidden mt-2 items-center justify-center flex-col">
@@ -235,10 +452,10 @@
             </div>
             <p id="exportMessage" class="text-sm text-gray-400 mt-2"></p>
         </div>
-       
+        
         <div class="flex-grow"></div>
 
-        <div>
+        <div id="panelFooter">
             <div class="pt-4 border-t border-gray-700">
                 <h3 class="text-md font-semibold text-gray-300 mb-2">Active Image Info:</h3>
                 <p class="text-sm text-gray-400">Name: <span id="activeImageName">N/A</span></p>
@@ -247,9 +464,9 @@
             </div>
 
             <div class="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-400 text-left">
+                <p class="mb-1">This exists because all other sites are greedy.</p>
+                <p class="mb-1"><a href="about/" class="underline hover:text-blue-300">About this tool.</a></p>
                 <p>Made by <a href="https://frandez.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-300">frandez.com</a></p>
-                <p class="mt-1">This exists because all other sites are greedy.</p>
-                <p class="mt-1"><a href="about/" class="underline hover:text-blue-300">About this tool.</a></p>
             </div>
         </div>
     </div>
@@ -257,23 +474,1503 @@
     <div id="canvasHost" class="flex-grow bg-gray-800 flex items-center justify-center p-4 relative overflow-hidden">
         <div class="canvas-container shadow-lg rounded-md bg-gray-700"> 
             <canvas id="imageCanvas"></canvas>
-            <canvas id="drawingCanvas"></canvas> </div>
-         <div id="canvasMessage" class="absolute inset-0 flex items-center justify-center text-gray-400 text-lg bg-gray-800 bg-opacity-90 pointer-events-none">
+            <canvas id="drawingCanvas"></canvas> 
+            <div id="crop-container"></div>
+        </div>
+        <div id="canvasMessage" class="absolute inset-0 flex items-center justify-center text-gray-400 text-lg bg-gray-800 bg-opacity-90 pointer-events-none">
             <p>Upload image(s) or paste (Ctrl+V) to start editing.</p>
         </div>
-        <div class="zoom-controls">
-            <button id="zoomOutBtn" title="Zoom Out (-)"><i class="fas fa-search-minus"></i></button>
-            <span id="zoomLevelDisplay">100%</span>
-            <button id="zoomInBtn" title="Zoom In (+)"><i class="fas fa-search-plus"></i></button>
-            <button id="zoomResetBtn" title="Reset Zoom (100%)"><i class="fas fa-expand"></i></button>
+        <div id="canvas-controls" class="absolute bottom-4 right-4 flex flex-col space-y-2">
+            <button id="zoomInBtn" class="bg-gray-700 hover:bg-gray-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" title="Zoom In" disabled><i class="fas fa-plus"></i></button>
+            <button id="zoomOutBtn" class="bg-gray-700 hover:bg-gray-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" title="Zoom Out" disabled><i class="fas fa-minus"></i></button>
+            <button id="fullscreenBtn" class="bg-gray-700 hover:bg-gray-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" title="Toggle Fullscreen" disabled><i class="fas fa-expand"></i></button>
         </div>
     </div>
 
     <div id="notificationArea" class="fixed bottom-5 right-5 space-y-2 z-50">
     </div>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- ELEMENT SELECTORS ---
+        const getEl = (id) => document.getElementById(id);
+        const queryEl = (selector) => document.querySelector(selector);
+        const queryAllEl = (selector) => document.querySelectorAll(selector);
+        
+        // Main Elements
+        const imageUpload = getEl('imageUpload');
+        const loadedFileNameEl = getEl('loadedFileName');
+        const imageSelectorContainer = getEl('imageSelectorContainer');
+        const imageSelectorList = getEl('imageSelectorList');
+        const imageCanvas = getEl('imageCanvas');
+        const ctx = imageCanvas.getContext('2d');
+        const drawingCanvas = getEl('drawingCanvas');
+        const drawCtx = drawingCanvas.getContext('2d');
+        const canvasMessage = getEl('canvasMessage');
+        const canvasHost = getEl('canvasHost');
+        const cropContainer = getEl('crop-container');
 
-    <script src="js/app.js" defer></script>
-    <script src="js/ui.js" defer></script>
+        // Header & Info
+        const undoButton = getEl('undoButton');
+        const redoButton = getEl('redoButton');
+        const resetImageBtn = getEl('resetImage');
+        const activeImageNameEl = getEl('activeImageName');
+        const originalDimensionsEl = getEl('originalDimensions');
+        const originalFileSizeEl = getEl('originalFileSize');
+        const currentDimensionsEl = getEl('currentDimensions');
+
+        // Mobile Menu
+        const hamburgerBtn = getEl('hamburgerBtn');
+        const controlPanel = getEl('controlPanel');
+        const menuBackdrop = getEl('menuBackdrop');
+
+        // Tabs
+        const tabButtons = queryAllEl('.tab-button');
+        const tabContents = queryAllEl('.tab-content');
+
+        // Resize Tab
+        const resizePercent = getEl('resizePercent');
+        const resizePercentValue = getEl('resizePercentValue');
+        const resizeWidthInput = getEl('resizeWidth'); 
+        const resizeHeightInput = getEl('resizeHeight'); 
+        const aspectLock = getEl('aspectLock');
+        const applyResizeBtn = getEl('applyResize');
+
+        // Crop Tab
+        const aspectRatioSelect = getEl('aspectRatio');
+        const cropWidthEl = getEl('cropWidth');
+        const cropHeightEl = getEl('cropHeight');
+        const applyCropBtn = getEl('applyCrop');
+        const cancelCropBtn = getEl('cancelCrop');
+
+        // Adjust Tab
+        const rotateLeftBtn = getEl('rotateLeft');
+        const rotateRightBtn = getEl('rotateRight');
+        const flipHorizontalBtn = getEl('flipHorizontal');
+        const flipVerticalBtn = getEl('flipVertical');
+        const brightnessSlider = getEl('brightness');
+        const brightnessValue = getEl('brightnessValue');
+        const contrastSlider = getEl('contrast');
+        const contrastValue = getEl('contrastValue');
+        const saturationSlider = getEl('saturation');
+        const saturationValue = getEl('saturationValue');
+        const grayscaleSlider = getEl('grayscale');
+        const grayscaleValue = getEl('grayscaleValue');
+        const applyAdjustmentsBtn = getEl('applyAdjustments');
+        const resetAdjustmentsBtn = getEl('resetAdjustments');
+
+        // Draw Tab
+        const penToolBtn = getEl('penTool');
+        const arrowToolBtn = getEl('arrowTool');
+        const drawColorInput = getEl('drawColor');
+        const lineWidthSlider = getEl('lineWidth');
+        const lineWidthValue = getEl('lineWidthValue');
+        const applyDrawBtn = getEl('applyDraw');
+        const cancelDrawBtn = getEl('cancelDraw');
+
+        // Optimize Tab
+        const optimizeWebBtn = getEl('optimizeWeb');
+        const optimizeShopifyBtn = getEl('optimizeShopify');
+        const optimizeFirebaseBtn = getEl('optimizeFirebase');
+        const optimizeMobileBtn = getEl('optimizeMobile');
+        const optimizeLoader = getEl('optimizeLoader');
+
+        // Export Tab
+        const fileNameInput = getEl('fileName');
+        const fileFormatSelect = getEl('fileFormat');
+        const qualityContainer = getEl('qualityContainer');
+        const qualitySlider = getEl('quality');
+        const qualityValue = getEl('qualityValue');
+        const targetFileSizeInput = getEl('targetFileSize');
+        const downloadActiveButton = getEl('downloadActiveButton');
+        const downloadAllButton = getEl('downloadAllButton');
+        const exportLoader = getEl('exportLoader');
+        const exportMessage = getEl('exportMessage');
+
+        // Canvas Controls
+        const zoomInBtn = getEl('zoomInBtn');
+        const zoomOutBtn = getEl('zoomOutBtn');
+        const fullscreenBtn = getEl('fullscreenBtn');
+        
+        // --- GLOBAL STATE ---
+        let imageStore = [];
+        let activeImageIndex = -1; 
+        let canvasScale = 1.0;
+
+        let isCropping = false;
+        let cropSelectionDiv = null;
+        let cropRect = { x: 0, y: 0, width: 0, height: 0 };
+        let dragInfo = { active: false, target: null, startX: 0, startY: 0, originalRect: {} };
+
+        let isDrawing = false;
+        let isPainting = false;
+        let drawingTool = 'pen';
+        let lastPaintPoint = { x: 0, y: 0 };
+        let startPaintPoint = { x: 0, y: 0 };
+        let persistentDrawingLayer = null;
+
+        let tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
+
+        // --- INITIALIZATION ---
+        disableAllControls(); 
+        setupTabs(); 
+        updateQualityVisibility();
+        setupMobileMenu();
+        adjustLayoutForViewport();
+
+        // --- UTILITY FUNCTIONS ---
+        function showNotification(message, type = 'success', duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            getEl('notificationArea').appendChild(notification);
+            
+            requestAnimationFrame(() => {
+                notification.classList.add('show');
+            });
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                notification.addEventListener('transitionend', () => notification.remove());
+            }, duration);
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function dataURLtoBlob(dataurl) { return fetch(dataurl).then(res => res.blob()); }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout); timeout = setTimeout(later, wait);
+            };
+        }
+
+        // --- STATE MANAGEMENT (Undo/Redo) ---
+        function saveState(operationName = "Unknown operation") {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+            
+            if (activeImgData.historyPointer < activeImgData.history.length - 1) {
+                activeImgData.history = activeImgData.history.slice(0, activeImgData.historyPointer + 1);
+            }
+
+            const currentStateSrc = activeImgData.current.src;
+            if (activeImgData.history.length > 0 && activeImgData.history[activeImgData.history.length - 1] === currentStateSrc) {
+                return;
+            }
+
+            activeImgData.history.push(currentStateSrc);
+            activeImgData.historyPointer = activeImgData.history.length - 1;
+            updateUndoRedoButtons();
+        }
+        
+        function updateUndoRedoButtons() {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) {
+                undoButton.disabled = true;
+                redoButton.disabled = true;
+                return;
+            }
+            const activeImgData = imageStore[activeImageIndex];
+            undoButton.disabled = activeImgData.historyPointer <= 0;
+            redoButton.disabled = activeImgData.historyPointer >= activeImgData.history.length - 1;
+        }
+
+        undoButton.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+
+            if (activeImgData.historyPointer > 0) {
+                activeImgData.historyPointer--;
+                const previousStateSrc = activeImgData.history[activeImgData.historyPointer];
+                const img = new Image();
+                img.onload = () => {
+                    activeImgData.current = img;
+                    setActiveImage(activeImageIndex, false); 
+                    showNotification('Undo successful.', 'success', 1500);
+                };
+                img.onerror = () => showNotification('Error loading previous state.', 'error');
+                img.src = previousStateSrc;
+                updateUndoRedoButtons();
+            }
+        });
+
+        redoButton.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+
+            if (activeImgData.historyPointer < activeImgData.history.length - 1) {
+                activeImgData.historyPointer++;
+                const nextStateSrc = activeImgData.history[activeImgData.historyPointer];
+                const img = new Image();
+                img.onload = () => {
+                    activeImgData.current = img;
+                    setActiveImage(activeImageIndex, false);
+                    showNotification('Redo successful.', 'success', 1500);
+                };
+                img.onerror = () => showNotification('Error loading next state.', 'error');
+                img.src = nextStateSrc;
+                updateUndoRedoButtons();
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                if (!undoButton.disabled) {
+                    e.preventDefault();
+                    undoButton.click();
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+                if (!redoButton.disabled) {
+                    e.preventDefault();
+                    redoButton.click();
+                }
+            }
+        });
+
+        // --- UI SETUP & CONTROL ---
+        function setupMobileMenu() {
+            hamburgerBtn.addEventListener('click', toggleMenu);
+            menuBackdrop.addEventListener('click', toggleMenu);
+        }
+
+        function toggleMenu() {
+            controlPanel.classList.toggle('open');
+            menuBackdrop.classList.toggle('open');
+        }
+
+        function adjustLayoutForViewport() {
+            const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+            if (isDesktop) {
+                controlPanel.classList.remove('mobile-menu', 'open');
+                menuBackdrop.classList.remove('open');
+                hamburgerBtn.classList.add('hidden');
+            } else {
+                controlPanel.classList.add('mobile-menu');
+                hamburgerBtn.classList.remove('hidden');
+            }
+        }
+
+        function setupTabs() {
+            const activeClasses = ['bg-blue-500', 'text-white']; 
+            const inactiveClasses = ['text-gray-400', 'hover:text-gray-200', 'hover:bg-gray-700'];
+
+            tabButtons.forEach(button => {
+                if (button.classList.contains('active')) {
+                    button.classList.add(...activeClasses);
+                    button.classList.remove(...inactiveClasses);
+                } else {
+                    button.classList.add(...inactiveClasses);
+                    button.classList.remove(...activeClasses);
+                }
+
+                button.addEventListener('click', () => {
+                    const newTab = button.dataset.tab;
+                    
+                    if (newTab !== 'crop' && isCropping) cancelCropMode();
+                    if (newTab !== 'draw' && isDrawing) cancelDrawMode();
+                    if (newTab !== 'adjust') {
+                        resetTempAdjustmentFilters(false); 
+                    }
+
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active', ...activeClasses);
+                        btn.classList.add(...inactiveClasses);
+                    });
+                    button.classList.add('active', ...activeClasses);
+                    button.classList.remove(...inactiveClasses);
+                    
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    getEl(`tab-${button.dataset.tab}`).classList.add('active');
+                    
+                    if (newTab === 'draw') {
+                        enterDrawMode();
+                    } else if (newTab === 'crop') {
+                        enterCropMode();
+                    } else if (newTab === 'adjust') {
+                         if (activeImageIndex !== -1) {
+                             drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+                         }
+                    }
+                });
+            });
+        }
+
+        function disableAllControls() { 
+            const controls = [
+                applyResizeBtn, applyCropBtn, cancelCropBtn, downloadActiveButton, 
+                downloadAllButton, resetImageBtn, undoButton, redoButton, rotateLeftBtn, rotateRightBtn,
+                flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn,
+                resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, 
+                fileFormatSelect, qualitySlider, targetFileSizeInput, aspectRatioSelect,
+                brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider,
+                penToolBtn, arrowToolBtn, drawColorInput, lineWidthSlider,
+                applyDrawBtn, cancelDrawBtn, optimizeWebBtn, optimizeShopifyBtn, optimizeFirebaseBtn, optimizeMobileBtn,
+                zoomInBtn, zoomOutBtn, fullscreenBtn
+            ];
+            controls.forEach(el => el.disabled = true);
+        }
+
+        function enableAllControls() { 
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
+            
+            const controls = [
+                applyResizeBtn, downloadActiveButton, resetImageBtn, rotateLeftBtn, rotateRightBtn,
+                flipHorizontalBtn, flipVerticalBtn, applyAdjustmentsBtn, resetAdjustmentsBtn,
+                resizePercent, resizeWidthInput, resizeHeightInput, aspectLock, fileNameInput, 
+                fileFormatSelect, qualitySlider, targetFileSizeInput, aspectRatioSelect,
+                brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider,
+                penToolBtn, arrowToolBtn, drawColorInput, lineWidthSlider,
+                optimizeWebBtn, optimizeShopifyBtn, optimizeFirebaseBtn, optimizeMobileBtn,
+                zoomInBtn, zoomOutBtn, fullscreenBtn
+            ];
+
+            controls.forEach(el => el.disabled = false);
+
+            downloadAllButton.disabled = imageStore.length <= 1; 
+            updateUndoRedoButtons();
+        }
+        
+        // --- IMAGE LOADING (UPLOAD & PASTE) ---
+        document.addEventListener('paste', async (e) => {
+            e.preventDefault();
+            const items = (e.clipboardData || window.clipboardData).items;
+            let file = null;
+            for (const item of items) {
+                if (item.type.indexOf('image') === 0) {
+                    file = item.getAsFile();
+                    break;
+                }
+            }
+            if (file) {
+                showNotification('Pasted image detected!', 'info', 2000);
+                await handleFiles([file]);
+            } else {
+                showNotification('No image found in clipboard.', 'warning');
+            }
+        });
+
+        imageUpload.addEventListener('change', async (event) => {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            await handleFiles(Array.from(files));
+            imageUpload.value = ''; // Reset input
+        });
+
+        async function handleFiles(files) {
+            loadedFileNameEl.textContent = ''; 
+            if (!files || files.length === 0) {
+                // ... reset logic
+                return;
+            }
+
+            imageStore = [];
+            imageSelectorList.innerHTML = ''; 
+            canvasMessage.innerHTML = '<div class="loader"></div><p class="mt-2">Loading images...</p>';
+            canvasMessage.classList.remove('hidden');
+            ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+            disableAllControls(); 
+
+            let loadPromises = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                const promise = new Promise((resolve, reject) => {
+                    reader.onload = (e) => {
+                        const originalImg = new Image();
+                        originalImg.onload = () => {
+                            const currentImg = new Image(); 
+                            currentImg.onload = () => {
+                                const initialStateSrc = currentImg.src; 
+                                resolve({ 
+                                    id: `img-${Date.now()}-${i}`, 
+                                    original: originalImg, 
+                                    current: currentImg, 
+                                    history: [initialStateSrc], 
+                                    historyPointer: 0,  
+                                    name: file.name.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_') || `pasted_image_${i}`,
+                                    ext: file.name.split('.').pop().toLowerCase() || 'png',
+                                    originalFileSizeBytes: file.size
+                                });
+                            };
+                            currentImg.onerror = () => reject(new Error(`Failed to load current state for ${file.name}`));
+                            currentImg.src = e.target.result; 
+                        };
+                        originalImg.onerror = () => reject(new Error(`Failed to load original ${file.name}`));
+                        originalImg.src = e.target.result;
+                    };
+                    reader.onerror = () => reject(new Error(`FileReader error for ${file.name}`));
+                    reader.readAsDataURL(file);
+                });
+                loadPromises.push(promise);
+            }
+
+            try {
+                imageStore = await Promise.all(loadPromises);
+                populateImageSelector();
+                if (imageStore.length > 0) {
+                    setActiveImage(0, false); 
+                    loadedFileNameEl.textContent = files.length > 1 ? `${files.length} files loaded` : files[0].name;
+                } else {
+                    canvasMessage.innerHTML = '<p>Upload image(s) to start editing.</p>';
+                    activeImageIndex = -1;
+                    updateDimensionDisplaysForActive(); 
+                }
+            } catch (error) {
+                console.error("Error loading images:", error);
+                showNotification(`Error loading images: ${error.message}`, 'error');
+                canvasMessage.innerHTML = '<p>Error loading images. Please try again.</p>';
+            }
+        }
+
+        function populateImageSelector() {
+            imageSelectorList.innerHTML = '';
+            if (imageStore.length > 1) { 
+                imageStore.forEach((imgData, index) => {
+                    const button = document.createElement('button');
+                    button.textContent = `${imgData.name}.${imgData.ext}`;
+                    button.dataset.index = index;
+                    button.onclick = () => setActiveImage(index, false); 
+                    imageSelectorList.appendChild(button);
+                });
+                imageSelectorContainer.classList.remove('hidden');
+            } else {
+                imageSelectorContainer.classList.add('hidden');
+            }
+        }
+
+        function setActiveImage(index, shouldSaveState = true) {
+            if (index < 0 || index >= imageStore.length) return;
+            
+            if (isCropping) cancelCropMode(); 
+            if (isDrawing) cancelDrawMode();
+
+            activeImageIndex = index;
+            canvasScale = 1.0; // Reset zoom on image change
+
+            Array.from(imageSelectorList.children).forEach((btn, i) => {
+                btn.classList.toggle('active-image', i === activeImageIndex);
+            });
+            
+            const activeImgData = imageStore[activeImageIndex];
+            if (imageStore.length === 1) { 
+                loadedFileNameEl.textContent = `${activeImgData.name}.${activeImgData.ext}`;
+            } else {
+                loadedFileNameEl.textContent = `${imageStore.length} files loaded`;
+            }
+
+            resetTempAdjustmentFilters(false); 
+            drawImageToCanvasWithFilters(activeImgData.current); 
+            updateDimensionDisplaysForActive();
+            resetResizeControlsForActive();
+            resetAdjustmentControls(); 
+            fileNameInput.value = `${activeImgData.name}_edited`; 
+            enableAllControls(); 
+            canvasMessage.classList.add('hidden');
+
+            updateUndoRedoButtons();
+        }
+        
+        // --- CANVAS DRAWING & ZOOM ---
+        function drawImageToCanvas(imageToDraw, filters = null) {
+            if (!imageToDraw) {
+                ctx.clearRect(0,0,imageCanvas.width, imageCanvas.height);
+                canvasMessage.classList.remove('hidden');
+                canvasMessage.innerHTML = '<p>No image selected or loaded.</p>';
+                imageCanvas.style.width = 'auto';
+                imageCanvas.style.height = 'auto';
+                imageCanvas.style.transform = 'scale(1)';
+                return;
+            }
+            canvasMessage.classList.add('hidden');
+            const localCanvasContainer = queryEl('.canvas-container'); 
+            if (!localCanvasContainer) { console.error("drawImageToCanvas: .canvas-container not found!"); return; }
+
+            const containerWidth = localCanvasContainer.clientWidth;
+            const containerHeight = localCanvasContainer.clientHeight;
+            
+            let baseDrawWidth = imageToDraw.width;
+            let baseDrawHeight = imageToDraw.height;
+            const imageAspectRatio = baseDrawWidth / baseDrawHeight;
+            
+            let displayWidth, displayHeight;
+            if (containerWidth / containerHeight > imageAspectRatio) {
+                displayHeight = containerHeight;
+                displayWidth = displayHeight * imageAspectRatio;
+            } else {
+                displayWidth = containerWidth;
+                displayHeight = displayWidth / imageAspectRatio;
+            }
+            
+            imageCanvas.width = Math.round(baseDrawWidth); 
+            imageCanvas.height = Math.round(baseDrawHeight);
+
+            imageCanvas.style.width = `${Math.round(displayWidth)}px`;
+            imageCanvas.style.height = `${Math.round(displayHeight)}px`;
+            imageCanvas.style.transform = `scale(${canvasScale})`;
+
+
+            ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+
+            let filterString = '';
+            if (filters) {
+                if (filters.brightness !== 100) filterString += `brightness(${filters.brightness}%) `;
+                if (filters.contrast !== 100) filterString += `contrast(${filters.contrast}%) `;
+                if (filters.saturation !== 100) filterString += `saturate(${filters.saturation}%) `;
+                if (filters.grayscale !== 0) filterString += `grayscale(${filters.grayscale}%) `;
+            }
+            ctx.filter = filterString.trim();
+            ctx.drawImage(imageToDraw, 0, 0, imageCanvas.width, imageCanvas.height);
+            ctx.filter = 'none'; 
+
+            // Sync drawing canvas
+            const rect = imageCanvas.getBoundingClientRect();
+            drawingCanvas.style.width = `${rect.width}px`;
+            drawingCanvas.style.height = `${rect.height}px`;
+            drawingCanvas.style.left = `${imageCanvas.offsetLeft}px`;
+            drawingCanvas.style.top = `${imageCanvas.offsetTop}px`;
+            drawingCanvas.width = rect.width;
+            drawingCanvas.height = rect.height;
+        }
+
+        function drawImageToCanvasWithFilters(imageToDraw, filtersToApply) {
+            drawImageToCanvas(imageToDraw, filtersToApply);
+        }
+        
+        function updateDimensionDisplaysForActive() {
+            if (activeImageIndex !== -1 && imageStore[activeImageIndex]) {
+                const activeImgData = imageStore[activeImageIndex];
+                activeImageNameEl.textContent = `${activeImgData.name}.${activeImgData.ext}`;
+                originalDimensionsEl.textContent = `${activeImgData.original.width} x ${activeImgData.original.height} px`;
+                originalFileSizeEl.textContent = formatBytes(activeImgData.originalFileSizeBytes);
+                currentDimensionsEl.textContent = `${Math.round(activeImgData.current.width)} x ${Math.round(activeImgData.current.height)} px`;
+            } else {
+                activeImageNameEl.textContent = 'N/A';
+                originalDimensionsEl.textContent = 'N/A';
+                originalFileSizeEl.textContent = 'N/A';
+                currentDimensionsEl.textContent = 'N/A';
+            }
+        }
+        
+        resetImageBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            
+            const activeImgData = imageStore[activeImageIndex];
+            const newCurrentImage = new Image();
+            newCurrentImage.onload = () => {
+                activeImgData.current = newCurrentImage; 
+                activeImgData.history = [newCurrentImage.src]; 
+                activeImgData.historyPointer = 0;
+                setActiveImage(activeImageIndex, false); 
+                resetTempAdjustmentFilters(); 
+                showNotification(`"${activeImgData.name}.${activeImgData.ext}" reset to original.`);
+            };
+            newCurrentImage.onerror = () => showNotification('Error loading original image for reset.', 'error');
+            newCurrentImage.src = activeImgData.original.src; 
+        });
+
+        // --- RESIZE LOGIC ---
+        function resetResizeControlsForActive() {
+            resizePercent.value = 100;
+            resizePercentValue.textContent = '100';
+            if (activeImageIndex !== -1 && imageStore[activeImageIndex]) { 
+                const activeImg = imageStore[activeImageIndex].current;
+                resizeWidthInput.value = activeImg.width;
+                resizeHeightInput.value = activeImg.height;
+            } else {
+                resizeWidthInput.value = '';
+                resizeHeightInput.value = '';
+            }
+        }
+
+        resizePercent.addEventListener('input', () => {
+            if (activeImageIndex === -1) return;
+            const percent = parseInt(resizePercent.value);
+            resizePercentValue.textContent = percent;
+            const activeImg = imageStore[activeImageIndex].current; 
+            
+            const newWidth = Math.round(activeImg.width * (percent / 100));
+            const newHeight = Math.round(activeImg.height * (percent / 100));
+            resizeWidthInput.value = newWidth > 0 ? newWidth : 1; 
+            resizeHeightInput.value = newHeight > 0 ? newHeight : 1;
+        });
+
+        resizeWidthInput.addEventListener('input', () => {
+            if (activeImageIndex === -1) return;
+            const newWidth = parseInt(resizeWidthInput.value);
+            if (isNaN(newWidth) || newWidth <=0) return;
+
+            if (aspectLock.checked) {
+                const activeImg = imageStore[activeImageIndex].current;
+                const currentAspectRatio = activeImg.width / activeImg.height;
+                resizeHeightInput.value = Math.max(1, Math.round(newWidth / currentAspectRatio));
+            }
+            updatePercentSliderFromDimensions(newWidth, parseInt(resizeHeightInput.value));
+        });
+
+        resizeHeightInput.addEventListener('input', () => {
+            if (activeImageIndex === -1) return;
+            const newHeight = parseInt(resizeHeightInput.value);
+            if (isNaN(newHeight) || newHeight <=0) return;
+
+            if (aspectLock.checked) {
+                const activeImg = imageStore[activeImageIndex].current;
+                const currentAspectRatio = activeImg.width / activeImg.height;
+                resizeWidthInput.value = Math.max(1, Math.round(newHeight * currentAspectRatio));
+            }
+            updatePercentSliderFromDimensions(parseInt(resizeWidthInput.value), newHeight);
+        });
+        
+        function updatePercentSliderFromDimensions(w, h) {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImg = imageStore[activeImageIndex].current;
+            if (activeImg.width === 0 || activeImg.height === 0) return; 
+            const percentW = (w / activeImg.width) * 100;
+            const percentH = (h / activeImg.height) * 100;
+            const representativePercent = aspectLock.checked ? Math.round((percentW + percentH) / 2) : Math.round(percentW);
+            resizePercent.value = representativePercent > 0 ? Math.min(representativePercent, 200) : 1;
+            resizePercentValue.textContent = resizePercent.value;
+        }
+
+        applyResizeBtn.addEventListener('click', async () => {
+            if (activeImageIndex === -1) return;
+            applyResizeBtn.disabled = true; 
+
+            const activeImgData = imageStore[activeImageIndex];
+            let newW = parseInt(resizeWidthInput.value);
+            let newH = parseInt(resizeHeightInput.value);
+            
+            newW = Math.max(1, newW || activeImgData.current.width); 
+            newH = Math.max(1, newH || activeImgData.current.height);
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = newW;
+            tempCanvas.height = newH;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(activeImgData.current, 0, 0, newW, newH);
+
+            try {
+                const newResizedImage = new Image();
+                newResizedImage.onload = () => {
+                    activeImgData.current = newResizedImage; 
+                    saveState("Resize");
+                    setActiveImage(activeImageIndex); 
+                    showNotification(`"${activeImgData.name}.${activeImgData.ext}" resized successfully!`);
+                };
+                newResizedImage.onerror = () => showNotification('Error creating resized image data.', 'error');
+                newResizedImage.src = tempCanvas.toDataURL();
+            } catch (error) {
+                console.error("Error resizing image:", error);
+                showNotification(`Error resizing: ${error.message}`, 'error');
+            } finally {
+                if (activeImageIndex !== -1) applyResizeBtn.disabled = false; 
+            }
+        });
+
+        // --- CROP LOGIC (REBUILT & ENHANCED) ---
+        function enterCropMode() {
+            if (activeImageIndex === -1 || isCropping) return;
+            isCropping = true;
+            
+            imageCanvas.style.cursor = 'crosshair';
+            cropContainer.style.pointerEvents = 'all';
+
+            cropSelectionDiv = document.createElement('div');
+            cropSelectionDiv.className = 'crop-selection';
+            
+            const grid = document.createElement('div');
+            grid.className = 'crop-grid';
+            for(let i=0; i<9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'crop-grid-cell';
+                grid.appendChild(cell);
+            }
+            cropSelectionDiv.appendChild(grid);
+
+            const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
+            handlePositions.forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = `crop-handle ${pos}`;
+                handle.dataset.type = pos;
+                cropSelectionDiv.appendChild(handle);
+            });
+            
+            cropContainer.appendChild(cropSelectionDiv);
+
+            const canvasRect = imageCanvas.getBoundingClientRect();
+            cropRect.width = canvasRect.width * 0.8;
+            cropRect.height = canvasRect.height * 0.8;
+            cropRect.x = (canvasRect.width - cropRect.width) / 2;
+            cropRect.y = (canvasRect.height - cropRect.height) / 2;
+
+            updateCropVisuals();
+            updateCropInputs();
+
+            applyCropBtn.disabled = false;
+            cancelCropBtn.disabled = false;
+
+            cropContainer.addEventListener('mousedown', onCropStart);
+            cropContainer.addEventListener('touchstart', onCropStart, { passive: false });
+        }
+
+        function cancelCropMode() {
+            if (!isCropping) return;
+            isCropping = false;
+            imageCanvas.style.cursor = 'grab';
+            cropContainer.style.pointerEvents = 'none';
+            if (cropSelectionDiv) {
+                cropSelectionDiv.remove();
+                cropSelectionDiv = null;
+            }
+            applyCropBtn.disabled = true;
+            cancelCropBtn.disabled = true;
+            cropContainer.removeEventListener('mousedown', onCropStart);
+            cropContainer.removeEventListener('touchstart', onCropStart);
+            document.removeEventListener('mousemove', onCropMove);
+            document.removeEventListener('touchmove', onCropMove);
+            document.removeEventListener('mouseup', onCropEnd);
+            document.removeEventListener('touchend', onCropEnd);
+        }
+
+        function updateCropVisuals() {
+            if (!cropSelectionDiv) return;
+            const canvasRect = imageCanvas.getBoundingClientRect();
+            const containerRect = cropContainer.getBoundingClientRect();
+            const offsetX = canvasRect.left - containerRect.left;
+            const offsetY = canvasRect.top - containerRect.top;
+            cropSelectionDiv.style.transform = `translate(${offsetX + cropRect.x}px, ${offsetY + cropRect.y}px)`;
+            cropSelectionDiv.style.width = `${cropRect.width}px`;
+            cropSelectionDiv.style.height = `${cropRect.height}px`;
+        }
+
+        function updateCropInputs() {
+            if (activeImageIndex === -1) return;
+            const imgData = imageStore[activeImageIndex];
+            const scaleX = imgData.current.width / imageCanvas.clientWidth;
+            const scaleY = imgData.current.height / imageCanvas.clientHeight;
+            cropWidthEl.value = Math.round(cropRect.width * scaleX);
+            cropHeightEl.value = Math.round(cropRect.height * scaleY);
+        }
+
+        aspectRatioSelect.addEventListener('change', () => {
+            if (!isCropping || !cropSelectionDiv || activeImageIndex === -1) return;
+            const activeImg = imageStore[activeImageIndex].current;
+            const selectedRatio = aspectRatioSelect.value;
+            if (selectedRatio === 'freeform') return;
+
+            const canvasRect = imageCanvas.getBoundingClientRect();
+            let ratioValue;
+            if (selectedRatio === 'original') {
+                ratioValue = activeImg.width / activeImg.height;
+            } else {
+                const parts = selectedRatio.split(':').map(Number);
+                ratioValue = parts[0] / parts[1];
+            }
+            
+            let newWidth = cropRect.width;
+            let newHeight = newWidth / ratioValue;
+
+            if (newHeight > cropRect.height) {
+                newHeight = cropRect.height;
+                newWidth = newHeight * ratioValue;
+            }
+
+            if (cropRect.x + newWidth > canvasRect.width) {
+                 newWidth = canvasRect.width - cropRect.x;
+                 newHeight = newWidth / ratioValue;
+            }
+            if (cropRect.y + newHeight > canvasRect.height) {
+                 newHeight = canvasRect.height - cropRect.y;
+                 newWidth = newHeight * ratioValue;
+            }
+            
+            cropRect.width = newWidth;
+            cropRect.height = newHeight;
+            updateCropVisuals();
+            updateCropInputs();
+        });
+
+        function getEventCoords(e) {
+            return e.touches ? e.touches[0] : e;
+        }
+
+        function onCropStart(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const target = e.target;
+            if (!target.classList.contains('crop-handle') && !target.classList.contains('crop-selection')) return;
+
+            dragInfo.active = true;
+            dragInfo.target = target.classList.contains('crop-handle') ? target.dataset.type : 'selection';
+            const coords = getEventCoords(e);
+            dragInfo.startX = coords.clientX;
+            dragInfo.startY = coords.clientY;
+            dragInfo.originalRect = { ...cropRect };
+
+            document.addEventListener('mousemove', onCropMove);
+            document.addEventListener('touchmove', onCropMove, { passive: false });
+            document.addEventListener('mouseup', onCropEnd);
+            document.addEventListener('touchend', onCropEnd);
+        }
+
+        function onCropMove(e) {
+            if (!dragInfo.active) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            const coords = getEventCoords(e);
+            const deltaX = coords.clientX - dragInfo.startX;
+            const deltaY = coords.clientY - dragInfo.startY;
+
+            let { x, y, width, height } = dragInfo.originalRect;
+            const canvasRect = imageCanvas.getBoundingClientRect();
+            const minSize = 20;
+            
+            const selectedRatio = aspectRatioSelect.value;
+            let ratioValue = null;
+            if (selectedRatio !== 'freeform') {
+                if (selectedRatio === 'original') {
+                    ratioValue = imageStore[activeImageIndex].current.width / imageStore[activeImageIndex].current.height;
+                } else {
+                    const parts = selectedRatio.split(':').map(Number);
+                    ratioValue = parts[0] / parts[1];
+                }
+            }
+
+            if (dragInfo.target === 'selection') {
+                x += deltaX;
+                y += deltaY;
+            } else {
+                // Resizing logic
+                if (dragInfo.target.includes('e')) width += deltaX;
+                if (dragInfo.target.includes('w')) { width -= deltaX; x += deltaX; }
+                if (dragInfo.target.includes('s')) height += deltaY;
+                if (dragInfo.target.includes('n')) { height -= deltaY; y += deltaY; }
+
+                if (ratioValue) {
+                    if (['n', 's'].includes(dragInfo.target)) {
+                        width = height * ratioValue;
+                    } else if (['e', 'w'].includes(dragInfo.target)) {
+                        height = width / ratioValue;
+                    } else { // Corners
+                         if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                            height = width / ratioValue;
+                         } else {
+                            width = height * ratioValue;
+                         }
+                    }
+                    if (dragInfo.target.includes('n')) y = dragInfo.originalRect.y + dragInfo.originalRect.height - height;
+                    if (dragInfo.target.includes('w')) x = dragInfo.originalRect.x + dragInfo.originalRect.width - width;
+                }
+            }
+
+            if (width < minSize) width = minSize;
+            if (height < minSize) height = minSize;
+            if (x < 0) { x = 0; }
+            if (y < 0) { y = 0; }
+            if (x + width > canvasRect.width) {
+                 if (dragInfo.target === 'selection') x = canvasRect.width - width;
+                 else width = canvasRect.width - x;
+            }
+            if (y + height > canvasRect.height) {
+                 if (dragInfo.target === 'selection') y = canvasRect.height - height;
+                 else height = canvasRect.height - y;
+            }
+            
+            cropRect = { x, y, width, height };
+            updateCropVisuals();
+            updateCropInputs();
+        }
+
+        function onCropEnd() {
+            dragInfo.active = false;
+            document.removeEventListener('mousemove', onCropMove);
+            document.removeEventListener('touchmove', onCropMove);
+            document.removeEventListener('mouseup', onCropEnd);
+            document.removeEventListener('touchend', onCropEnd);
+        }
+
+        applyCropBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !isCropping) return;
+            const imgData = imageStore[activeImageIndex];
+            const scaleX = imgData.current.width / imageCanvas.clientWidth;
+            const scaleY = imgData.current.height / imageCanvas.clientHeight;
+            const sx = cropRect.x * scaleX;
+            const sy = cropRect.y * scaleY;
+            const sWidth = cropRect.width * scaleX;
+            const sHeight = cropRect.height * scaleY;
+
+            if (sWidth <= 0 || sHeight <= 0) {
+                showNotification('Invalid crop area.', 'error');
+                return;
+            }
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = Math.round(sWidth);
+            tempCanvas.height = Math.round(sHeight);
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(imgData.current, sx, sy, sWidth, sHeight, 0, 0, tempCanvas.width, tempCanvas.height);
+
+            const newCroppedImage = new Image();
+            newCroppedImage.onload = () => {
+                imgData.current = newCroppedImage;
+                saveState("Crop");
+                setActiveImage(activeImageIndex);
+                showNotification('Image cropped successfully!', 'success');
+            };
+            newCroppedImage.src = tempCanvas.toDataURL();
+            cancelCropMode();
+        });
+
+        // --- ADJUSTMENT & FILTER LOGIC ---
+        function resetAdjustmentControls() {
+            brightnessSlider.value = 100; brightnessValue.textContent = '100';
+            contrastSlider.value = 100; contrastValue.textContent = '100';
+            saturationSlider.value = 100; saturationValue.textContent = '100';
+            grayscaleSlider.value = 0; grayscaleValue.textContent = '0';
+            tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
+        }
+        
+        function resetTempAdjustmentFilters(shouldRedraw = true) {
+             tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
+             resetAdjustmentControls(); 
+             if (shouldRedraw && activeImageIndex !== -1 && imageStore[activeImageIndex]) {
+                  drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+             }
+        }
+
+        [brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider].forEach(slider => {
+            slider.addEventListener('input', () => {
+                if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+                tempFilters.brightness = parseInt(brightnessSlider.value);
+                tempFilters.contrast = parseInt(contrastSlider.value);
+                tempFilters.saturation = parseInt(saturationSlider.value);
+                tempFilters.grayscale = parseInt(grayscaleSlider.value);
+
+                brightnessValue.textContent = tempFilters.brightness;
+                contrastValue.textContent = tempFilters.contrast;
+                saturationValue.textContent = tempFilters.saturation;
+                grayscaleValue.textContent = tempFilters.grayscale;
+                
+                drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+            });
+        });
+        
+        resetAdjustmentsBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1) return;
+            resetTempAdjustmentFilters(); 
+            showNotification('Adjustments preview reset.', 'info', 1500);
+        });
+
+        applyAdjustmentsBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+            
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = activeImgData.current.width;
+            tempCanvas.height = activeImgData.current.height;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            let filterString = '';
+            if (tempFilters.brightness !== 100) filterString += `brightness(${tempFilters.brightness}%) `;
+            if (tempFilters.contrast !== 100) filterString += `contrast(${tempFilters.contrast}%) `;
+            if (tempFilters.saturation !== 100) filterString += `saturate(${tempFilters.saturation}%) `;
+            if (tempFilters.grayscale !== 0) filterString += `grayscale(${tempFilters.grayscale}%) `;
+            
+            tempCtx.filter = filterString.trim();
+            tempCtx.drawImage(activeImgData.current, 0, 0);
+            tempCtx.filter = 'none'; 
+
+            const newAdjustedImage = new Image();
+            newAdjustedImage.onload = () => {
+                activeImgData.current = newAdjustedImage;
+                saveState("Adjustments Applied");
+                setActiveImage(activeImageIndex); 
+                resetTempAdjustmentFilters(false); 
+                showNotification('Adjustments applied successfully!', 'success');
+            };
+            newAdjustedImage.onerror = () => showNotification('Error applying adjustments.', 'error');
+            newAdjustedImage.src = tempCanvas.toDataURL();
+        });
+
+        // --- TRANSFORM LOGIC ---
+        function applyTransformation(transformationType) {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return;
+            const activeImgData = imageStore[activeImageIndex];
+            const img = activeImgData.current;
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            if (transformationType === 'rotateLeft' || transformationType === 'rotateRight') {
+                tempCanvas.width = img.height;
+                tempCanvas.height = img.width;
+                tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+                tempCtx.rotate(transformationType === 'rotateLeft' ? -Math.PI / 2 : Math.PI / 2);
+                tempCtx.drawImage(img, -img.width / 2, -img.height / 2);
+            } else if (transformationType === 'flipHorizontal') {
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                tempCtx.translate(img.width, 0);
+                tempCtx.scale(-1, 1);
+                tempCtx.drawImage(img, 0, 0);
+            } else if (transformationType === 'flipVertical') {
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                tempCtx.translate(0, img.height);
+                tempCtx.scale(1, -1);
+                tempCtx.drawImage(img, 0, 0);
+            }
+
+            const newTransformedImage = new Image();
+            newTransformedImage.onload = () => {
+                activeImgData.current = newTransformedImage;
+                saveState(transformationType);
+                setActiveImage(activeImageIndex);
+                showNotification(`${transformationType.replace(/([A-Z])/g, ' $1').trim()} applied.`, 'success');
+            };
+            newTransformedImage.onerror = () => showNotification(`Error applying ${transformationType}.`, 'error');
+            newTransformedImage.src = tempCanvas.toDataURL();
+        }
+
+        rotateLeftBtn.addEventListener('click', () => applyTransformation('rotateLeft'));
+        rotateRightBtn.addEventListener('click', () => applyTransformation('rotateRight'));
+        flipHorizontalBtn.addEventListener('click', () => applyTransformation('flipHorizontal'));
+        flipVerticalBtn.addEventListener('click', () => applyTransformation('flipVertical'));
+
+        // --- DRAWING LOGIC ---
+        penToolBtn.addEventListener('click', () => {
+            drawingTool = 'pen';
+            penToolBtn.classList.add('active');
+            arrowToolBtn.classList.remove('active');
+        });
+        arrowToolBtn.addEventListener('click', () => {
+            drawingTool = 'arrow';
+            arrowToolBtn.classList.add('active');
+            penToolBtn.classList.remove('active');
+        });
+        lineWidthSlider.addEventListener('input', () => {
+            lineWidthValue.textContent = lineWidthSlider.value;
+        });
+
+        function enterDrawMode() {
+            if (activeImageIndex === -1 || isDrawing) return;
+            isDrawing = true;
+            
+            if (!persistentDrawingLayer) {
+                persistentDrawingLayer = document.createElement('canvas');
+            }
+            persistentDrawingLayer.width = drawingCanvas.width;
+            persistentDrawingLayer.height = drawingCanvas.height;
+            const persistentCtx = persistentDrawingLayer.getContext('2d');
+            persistentCtx.clearRect(0, 0, persistentDrawingLayer.width, persistentDrawingLayer.height);
+
+            drawingCanvas.style.pointerEvents = 'auto';
+            drawingCanvas.style.cursor = 'crosshair';
+            imageCanvas.style.cursor = 'crosshair';
+            
+            applyDrawBtn.disabled = false;
+            cancelDrawBtn.disabled = false;
+            applyResizeBtn.disabled = true;
+
+            penToolBtn.classList.add('active');
+            arrowToolBtn.classList.remove('active');
+            drawingTool = 'pen';
+        }
+
+        function cancelDrawMode() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            if (persistentDrawingLayer) {
+                const persistentCtx = persistentDrawingLayer.getContext('2d');
+                persistentCtx.clearRect(0, 0, persistentDrawingLayer.width, persistentDrawingLayer.height);
+            }
+
+            drawingCanvas.style.pointerEvents = 'none';
+            drawingCanvas.style.cursor = 'default';
+            imageCanvas.style.cursor = 'grab';
+            
+            if (activeImageIndex !== -1) {
+                applyResizeBtn.disabled = false;
+            }
+            applyDrawBtn.disabled = true;
+            cancelDrawBtn.disabled = true;
+        }
+
+        cancelDrawBtn.addEventListener('click', cancelDrawMode);
+
+        applyDrawBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex] || !persistentDrawingLayer) return;
+            const activeImgData = imageStore[activeImageIndex];
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = activeImgData.current.width;
+            tempCanvas.height = activeImgData.current.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(activeImgData.current, 0, 0);
+            tempCtx.drawImage(persistentDrawingLayer, 0, 0, persistentDrawingLayer.width, persistentDrawingLayer.height, 0, 0, tempCanvas.width, tempCanvas.height);
+
+            const newImageWithDrawing = new Image();
+            newImageWithDrawing.onload = () => {
+                activeImgData.current = newImageWithDrawing;
+                saveState("Drawing Applied");
+                
+                // Manually update UI instead of calling setActiveImage to avoid exiting draw mode
+                drawImageToCanvas(activeImgData.current);
+                updateDimensionDisplaysForActive();
+                
+                // Clear the drawing layers for the next drawing action
+                drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                if (persistentDrawingLayer) {
+                    const persistentCtx = persistentDrawingLayer.getContext('2d');
+                    persistentCtx.clearRect(0, 0, persistentDrawingLayer.width, persistentDrawingLayer.height);
+                }
+                
+                showNotification('Drawing applied! You can continue drawing.', 'success');
+            };
+            newImageWithDrawing.onerror = () => showNotification('Error applying drawing.', 'error');
+            newImageWithDrawing.src = tempCanvas.toDataURL();
+        });
+
+        function onDrawStart(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            isPainting = true;
+            const rect = drawingCanvas.getBoundingClientRect();
+            const coords = getEventCoords(e);
+            startPaintPoint = { x: coords.x - rect.left, y: coords.y - rect.top };
+            lastPaintPoint = { ...startPaintPoint };
+
+            if (drawingTool === 'pen') {
+                drawCtx.beginPath();
+                drawCtx.moveTo(lastPaintPoint.x, lastPaintPoint.y);
+            }
+        }
+
+        function onDrawMove(e) {
+            if (!isPainting) return;
+            e.preventDefault();
+            const rect = drawingCanvas.getBoundingClientRect();
+            const coords = getEventCoords(e);
+            const currentPoint = { x: coords.x - rect.left, y: coords.y - rect.top };
+
+            drawCtx.strokeStyle = drawColorInput.value;
+            drawCtx.lineWidth = lineWidthSlider.value;
+            drawCtx.lineCap = 'round';
+            drawCtx.lineJoin = 'round';
+
+            if (drawingTool === 'pen') {
+                drawCtx.lineTo(currentPoint.x, currentPoint.y);
+                drawCtx.stroke();
+            } else if (drawingTool === 'arrow') {
+                drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                if (persistentDrawingLayer) {
+                    drawCtx.drawImage(persistentDrawingLayer, 0, 0);
+                }
+                drawArrow(drawCtx, startPaintPoint.x, startPaintPoint.y, currentPoint.x, currentPoint.y, drawColorInput.value, lineWidthSlider.value);
+            }
+             lastPaintPoint = currentPoint;
+        }
+
+        function onDrawEnd(e) {
+            if (!isPainting || !isDrawing) return;
+            isPainting = false;
+            
+            const persistentCtx = persistentDrawingLayer.getContext('2d');
+            if (drawingTool === 'pen') {
+                drawCtx.closePath();
+            }
+            persistentCtx.drawImage(drawingCanvas, 0, 0);
+        }
+        
+        drawingCanvas.addEventListener('mousedown', onDrawStart);
+        drawingCanvas.addEventListener('mousemove', onDrawMove);
+        drawingCanvas.addEventListener('mouseup', onDrawEnd);
+        drawingCanvas.addEventListener('mouseleave', onDrawEnd);
+        drawingCanvas.addEventListener('touchstart', onDrawStart, { passive: false });
+        drawingCanvas.addEventListener('touchmove', onDrawMove, { passive: false });
+        drawingCanvas.addEventListener('touchend', onDrawEnd);
+
+        function drawArrow(ctx, fromx, fromy, tox, toy, color, width) {
+            const headlen = Math.max(10, width * 3);
+            const dx = tox - fromx;
+            const dy = toy - fromy;
+            if (dx === 0 && dy === 0) return;
+            const angle = Math.atan2(dy, dx);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(fromx, fromy);
+            ctx.lineTo(tox, toy);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(tox, toy);
+            ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // --- OPTIMIZATION LOGIC ---
+        async function applyOptimization(options) {
+            if (activeImageIndex === -1) return;
+
+            optimizeLoader.style.display = 'flex';
+            const { name, ...otherOptions } = options;
+            const format = otherOptions.format;
+            let fileExtension = format.split('/')[1];
+            if (format === 'image/jpeg') fileExtension = 'jpg';
+
+            try {
+                const activeImgData = imageStore[activeImageIndex];
+                const dataUrl = await processImageForOptimization(activeImgData.current, otherOptions);
+
+                if (!dataUrl) {
+                    throw new Error("Optimization failed to produce an image.");
+                }
+
+                const blob = await dataURLtoBlob(dataUrl);
+                const finalFileName = `${activeImgData.name}_${name.toLowerCase().replace(/\s+/g, '-')}.${fileExtension}`;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = finalFileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+                showNotification(`Optimized for ${name} and downloaded!`, 'success');
+
+            } catch (error) {
+                console.error("Optimization Error:", error);
+                showNotification(`Error during optimization: ${error.message}`, 'error');
+            } finally {
+                optimizeLoader.style.display = 'none';
+            }
+        }
+
+        async function processImageForOptimization(img, { maxWidth, maxHeight, format, quality, targetKb }) {
+            let newW = img.width;
+            let newH = img.height;
+            const ratio = img.width / img.height;
+
+            if (maxWidth && newW > maxWidth) {
+                newW = maxWidth;
+                newH = Math.round(newW / ratio);
+            }
+            if (maxHeight && newH > maxHeight) {
+                newH = maxHeight;
+                newW = Math.round(newH * ratio);
+            }
+            
+            newW = Math.round(newW);
+            newH = Math.round(newH);
+
+            const resizeCanvas = document.createElement('canvas');
+            resizeCanvas.width = newW;
+            resizeCanvas.height = newH;
+            const resizeCtx = resizeCanvas.getContext('2d');
+            resizeCtx.drawImage(img, 0, 0, newW, newH);
+
+            if (targetKb && (format === 'image/jpeg' || format === 'image/webp')) {
+                let currentQuality = quality || 0.9;
+                let minQ = 0.01, maxQ = 1.0;
+                let bestDataUrl = '';
+                
+                const highQualityDataUrl = resizeCanvas.toDataURL(format, maxQ);
+                const highQualityBlob = await dataURLtoBlob(highQualityDataUrl);
+                if (highQualityBlob.size / 1024 <= targetKb) {
+                    return highQualityDataUrl;
+                }
+
+                for (let i = 0; i < 8; i++) { // Binary search for quality
+                    const dataUrl = resizeCanvas.toDataURL(format, currentQuality);
+                    const tempBlob = await dataURLtoBlob(dataUrl);
+                    const currentSizeKB = tempBlob.size / 1024;
+
+                    if (currentSizeKB <= targetKb) {
+                        bestDataUrl = dataUrl;
+                        minQ = currentQuality;
+                    } else {
+                        maxQ = currentQuality;
+                    }
+                    if ((maxQ - minQ) < 0.02) break;
+                    currentQuality = (minQ + maxQ) / 2;
+                }
+                return bestDataUrl || resizeCanvas.toDataURL(format, minQ);
+            } else {
+                return resizeCanvas.toDataURL(format, quality);
+            }
+        }
+
+        optimizeWebBtn.addEventListener('click', () => applyOptimization({ name: 'Web', maxWidth: 1920, maxHeight: 1920, format: 'image/webp', quality: 0.8 }));
+        optimizeShopifyBtn.addEventListener('click', () => applyOptimization({ name: 'Shopify', maxWidth: 2000, maxHeight: 2000, format: 'image/jpeg', quality: 0.9 }));
+        optimizeFirebaseBtn.addEventListener('click', () => applyOptimization({ name: 'Firebase', maxWidth: 1000, maxHeight: 1000, format: 'image/jpeg', quality: 0.9, targetKb: 300 }));
+        optimizeMobileBtn.addEventListener('click', () => applyOptimization({ name: 'Mobile', maxWidth: 1200, maxHeight: 1200, format: 'image/jpeg', quality: 0.85, targetKb: 1000 }));
+
+
+        // --- EXPORT LOGIC ---
+        function updateQualityVisibility() {
+            qualityContainer.style.display = (fileFormatSelect.value === 'image/png') ? 'none' : 'block';
+            targetFileSizeInput.disabled = (fileFormatSelect.value === 'image/png');
+        }
+        fileFormatSelect.addEventListener('change', updateQualityVisibility);
+        qualitySlider.addEventListener('input', () => {
+             const qualitySpan = getEl('qualityValue');
+             if(qualitySpan) qualitySpan.textContent = qualitySlider.value;
+        });
+
+        async function exportSingleImage(imgData, baseFilename, exportFormat, exportQuality, targetKB) { 
+            let fileExtension = exportFormat.split('/')[1];
+            if (exportFormat === 'image/jpeg') fileExtension = 'jpg';
+            const finalFileName = `${baseFilename}.${fileExtension}`;
+
+            const dataUrl = await processImageForOptimization(imgData.current, {
+                maxWidth: imgData.current.width,
+                maxHeight: imgData.current.height,
+                format: exportFormat,
+                quality: exportQuality,
+                targetKb: targetKB
+            });
+            
+            if (!dataUrl) {
+                throw new Error("Failed to generate image for download.");
+            }
+
+            const blob = await dataURLtoBlob(dataUrl);
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = finalFileName;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            return finalFileName; 
+        }
+
+        downloadActiveButton.addEventListener('click', async () => {
+            if (activeImageIndex === -1 || !imageStore[activeImageIndex]) return; 
+            
+            exportLoader.style.display = 'flex'; 
+            exportMessage.textContent = `Processing active image...`;
+            downloadActiveButton.disabled = true;
+            downloadAllButton.disabled = true;
+
+            const activeImgData = imageStore[activeImageIndex];
+            const baseName = fileNameInput.value || `${activeImgData.name}_edited`;
+            const format = fileFormatSelect.value;
+            let quality = parseFloat(qualitySlider.value);
+            const targetSizeKB = parseFloat(targetFileSizeInput.value);
+
+            try {
+                const exportedName = await exportSingleImage(activeImgData, baseName, format, quality, targetSizeKB);
+                showNotification(`"${exportedName}" downloaded successfully!`);
+                exportMessage.textContent = `"${exportedName}" downloaded.`;
+            } catch (error) {
+                console.error(`Export error for active image:`, error);
+                showNotification(`Error exporting active image: ${error.message}`, 'error');
+                exportMessage.textContent = `Error exporting active image.`;
+            } finally {
+                exportLoader.style.display = 'none';
+                enableAllControls();
+            }
+        });
+
+        downloadAllButton.addEventListener('click', async () => {
+            if (imageStore.length === 0) return;
+
+            exportLoader.style.display = 'flex';
+            downloadActiveButton.disabled = true;
+            downloadAllButton.disabled = true;
+            let successCount = 0;
+            let errorCount = 0;
+
+            const globalFormat = fileFormatSelect.value;
+            const globalQuality = parseFloat(qualitySlider.value);
+            const globalTargetSizeKB = parseFloat(targetFileSizeInput.value);
+
+            for (let i = 0; i < imageStore.length; i++) {
+                const imgData = imageStore[i];
+                exportMessage.textContent = `Processing image ${i + 1} of ${imageStore.length}: ${imgData.name}.${imgData.ext}`;
+                try {
+                    const baseName = `${imgData.name}_edited_batch_${i+1}`; 
+                    await exportSingleImage(imgData, baseName, globalFormat, globalQuality, globalTargetSizeKB);
+                    successCount++;
+                    await new Promise(resolve => setTimeout(resolve, 200)); 
+                } catch (error) {
+                    console.error(`Batch export error for ${imgData.name}:`, error);
+                    errorCount++;
+                }
+            }
+
+            exportLoader.style.display = 'none';
+            enableAllControls();
+            const finalMessage = `${successCount} image(s) downloaded. ${errorCount > 0 ? errorCount + ' error(s).' : ''}`;
+            exportMessage.textContent = finalMessage;
+            showNotification(finalMessage, errorCount > 0 ? 'warning' : (successCount > 0 ? 'success': 'info'));
+        });
+
+        // --- CANVAS CONTROLS (ZOOM/FULLSCREEN) ---
+        zoomInBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1) return;
+            canvasScale = Math.min(3.0, canvasScale + 0.1); // Max zoom 300%
+            drawImageToCanvas(imageStore[activeImageIndex].current);
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1) return;
+            canvasScale = Math.max(0.2, canvasScale - 0.1); // Min zoom 20%
+            drawImageToCanvas(imageStore[activeImageIndex].current);
+        });
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (activeImageIndex === -1) return;
+            if (!document.fullscreenElement) {
+                canvasHost.requestFullscreen().catch(err => {
+                    showNotification(`Error entering fullscreen: ${err.message}`, 'error');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            const icon = fullscreenBtn.querySelector('i');
+            if (document.fullscreenElement) {
+                icon.classList.remove('fa-expand');
+                icon.classList.add('fa-compress');
+            } else {
+                icon.classList.remove('fa-compress');
+                icon.classList.add('fa-expand');
+            }
+        });
+        
+        // --- WINDOW RESIZE ---
+        const debouncedRedraw = debounce(() => {
+            adjustLayoutForViewport();
+            if (activeImageIndex !== -1 && imageStore[activeImageIndex]) { 
+                drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters); 
+                if (isCropping) {
+                    // Re-initialize crop to fit new layout
+                    cancelCropMode();
+                    enterCropMode();
+                }
+            }
+        }, 250); 
+
+        window.addEventListener('resize', debouncedRedraw);
+    });
+    </script>
 </body>
 </html>
