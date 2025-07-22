@@ -11,12 +11,12 @@ The project uses [Tailwind CSS](https://tailwindcss.com) and vanilla JavaScript.
 
 ## Running
 
-# Online (Recommended)
+### Online (Recommended)
 
 The easiest way to use Freemaged is to visit the official website:
 https://freemaged.com
 
-# Locally
+### Locally
 
 If you prefer to run the editor offline, you can download the project and open index.html directly in any modern web browser. No build step or server is required.
 
