@@ -30,4 +30,5 @@ If you prefer to run the editor offline, you can download the project and open i
 
 ## Made by
 
-frandez.com
+Francisco Fernandez 
+[frandez.com](https://frandez.com)
