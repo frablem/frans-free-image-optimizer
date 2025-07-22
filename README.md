@@ -30,5 +30,5 @@ If you prefer to run the editor offline, you can download the project and open i
 
 ## Made by
 
-Francisco Fernandez 
+This app was made by Francisco Fernandez with the help of AI.\
 [frandez.com](https://frandez.com)
