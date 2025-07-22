@@ -4,7 +4,7 @@ Freemaged is a free, lightweight, and privacy-focused image editor that runs dir
 
 ## Development
 
-The project uses [Tailwind CSS](https://tailwindcss.com) and vanilla JavaScript. Styles and scripts are nested into the `index.html` and `about/index.html` files.
+The project uses [Tailwind CSS](https://tailwindcss.com) and vanilla JavaScript. Styles and scripts are in the `index.html` and `about/index.html` files.
 
 - `index.html` – The main image editor application.
 - `about/index.html` – The separate "About" page, which is also self-contained.
@@ -27,3 +27,7 @@ If you prefer to run the editor offline, you can download the project and open i
 - **v1.2** – Enhanced mobile experience by allowing the tool panel to be hidden on small screens.
 - **v1.2.1** – Fixed mobile toggle reliability on touch devices.
 - **v1.3** – Added a new mobile slider menu, version number visible next to the title, instant start for cropping and drawing, allows for multiple drawings, added quick optimization for mobile, reordered footer links.
+
+## Made by
+
+frandez.com
