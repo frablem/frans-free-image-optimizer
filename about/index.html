@@ -23,9 +23,198 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/main.css">
-    <script src="../js/about.js" defer></script>
-        </head>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none;
+        }
+        .control-panel {
+            overflow-y: auto;
+        }
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: grab;
+            transition: transform 0.2s ease-out;
+        }
+        #drawingCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none; /* Initially not interactive */
+            z-index: 10;
+        }
+        .crop-selection {
+            position: absolute;
+            border: 2px dashed #3b82f6;
+            box-sizing: border-box;
+            cursor: move;
+            z-index: 10;
+        }
+        .crop-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #3b82f6;
+            border: 1px solid white;
+            border-radius: 50%;
+            z-index: 20;
+        }
+        .crop-handle.nw { top: -5px; left: -5px; cursor: nwse-resize; }
+        .crop-handle.ne { top: -5px; right: -5px; cursor: nesw-resize; }
+        .crop-handle.sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
+        .crop-handle.se { bottom: -5px; right: -5px; cursor: nwse-resize; }
+        .crop-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+        .crop-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+        .crop-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: ew-resize; }
+        .crop-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: ew-resize; }
+       
+        .crop-grid-line {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .crop-grid-line.vertical { width: 1px; height: 100%; }
+        .crop-grid-line.horizontal { height: 1px; width: 100%; }
+
+        .tab-button {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .loader {
+            border: 4px solid #4b5563;
+            border-top: 4px solid #60a5fa;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .control-panel::-webkit-scrollbar { width: 8px; }
+        .control-panel::-webkit-scrollbar-track { background: #374151; border-radius: 10px; } 
+        .control-panel::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; } 
+        .control-panel::-webkit-scrollbar-thumb:hover { background: #9ca3af; } 
+
+        input[type="number"], input[type="text"], select, input[type="range"], input[type="color"] {
+            background-color: #374151;
+            color: #f3f4f6;
+            border-color: #4b5563;
+            padding: 0.5rem;
+        }
+        input[type="number"]::placeholder, input[type="text"]::placeholder {
+            color: #9ca3af;
+        }
+        .file\:bg-blue-800 { background-color: #1e3a8a !important; }
+        .file\:text-blue-300 { color: #93c5fd !important; }
+        .hover\:file\:bg-blue-700:hover .file\:bg-blue-800 { background-color: #1e40af !important; }
+       
+        #imageSelectorList button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 8px 12px; 
+            border-bottom: 1px solid #4b5563;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-radius: 4px;
+            margin-bottom: 2px;
+        }
+        #imageSelectorList button:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        #imageSelectorList button:hover {
+            background-color: #4b5563;
+        }
+        #imageSelectorList button.active-image {
+            background-color: #2563eb;
+            color: white;
+            font-weight: 600;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            font-size: 0.9rem;
+        }
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .notification.fade-out {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+        }
+        .notification.success { background-color: #10B981; color: white; }
+        .notification.error { background-color: #EF4444; color: white; }
+        .notification.warning { background-color: #F59E0B; color: white; }
+        .notification.info { background-color: #3B82F6; color: white; }
+       
+        .zoom-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            background-color: rgba(49, 49, 49, 0.7);
+            padding: 8px;
+            border-radius: 8px;
+            z-index: 5;
+        }
+        .zoom-controls button {
+            background-color: #4b5563;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .zoom-controls button:hover {
+            background-color: #6b7280;
+        }
+        .zoom-controls span {
+            color: white;
+            font-size: 14px;
+            padding: 0 5px;
+            line-height: 30px;
+        }
+        .tool-button.active {
+            background-color: #2563eb;
+            color: white;
+        }
+    </style>
+</head>
 <body class="bg-gray-900 text-gray-300 flex items-center justify-center min-h-screen p-4">
 
     <div class="max-w-4xl w-full bg-gray-800 rounded-lg shadow-xl p-8 md:p-12 space-y-8">
@@ -36,7 +225,6 @@
         </header>
 
         <main class="space-y-6 text-gray-300">
-            <!-- How It Works Section -->
             <div>
                 <h2 class="text-2xl font-semibold text-blue-300 border-b border-gray-700 pb-2 mb-4">How It Works (Technically)</h2>
                 <p>
@@ -49,7 +237,6 @@
                 </ul>
             </div>
             
-            <!-- Privacy Policy Section -->
             <div>
                 <h2 class="text-2xl font-semibold text-blue-300 border-b border-gray-700 pb-2 mb-4">Our Privacy Commitment</h2>
                 <div class="space-y-4">
@@ -88,6 +275,8 @@
         </footer>
 
     </div>
-
+    <script defer>
+        document.documentElement.classList.add('dark');
+    </script>
 </body>
 </html>
