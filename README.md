@@ -26,4 +26,4 @@ If you prefer to run the editor offline, you can download the project and open i
 - **v1.1** – Improved SEO with additional meta tags and sitemap support.
 - **v1.2** – Enhanced mobile experience by allowing the tool panel to be hidden on small screens.
 - **v1.2.1** – Fixed mobile toggle reliability on touch devices.
-- **v1.3** - Added a new mobile slider menu, version number visible next to the title, instant start for cropping and drawing, allows for multiple drawings, added quick optimization for mobile, reordered footer links.
+- **v1.3** – Added a new mobile slider menu, version number visible next to the title, instant start for cropping and drawing, allows for multiple drawings, added quick optimization for mobile, reordered footer links.
