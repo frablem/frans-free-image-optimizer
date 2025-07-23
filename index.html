@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freemaged - Free Image Editor v1.3</title>
+    <title>Freemaged - Free Image Editor v1.3.1</title>
     <meta name="description" content="Freemaged is a free, privacy-focused browser image editor that runs entirely in your browser.">
     <meta name="keywords" content="image editor, online image editor, privacy, open source, freemaged">
     <link rel="canonical" href="https://freemaged.com/">
@@ -19,8 +19,17 @@
     <meta name="twitter:image" content="https://freemaged.com/fav.ico">
     <meta name="robots" content="index, follow">
     <link rel="icon" href="fav.ico" type="image/x-icon">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+    <script src="https://cdn.tailwindcss.com" defer></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"></noscript>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -84,7 +93,7 @@
             pointer-events: none; /* Initially not interactive */
             z-index: 10;
         }
-       
+        
         #crop-container {
             position: absolute;
             top: 0;
@@ -223,15 +232,12 @@
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col md:flex-row h-screen overflow-hidden">
 
-    <!-- Hamburger Menu Button (Mobile Only) -->
-    <button id="hamburgerBtn" class="md:hidden absolute top-4 left-4 z-50 bg-blue-600/80 text-white p-2 rounded-md">
+    <button id="hamburgerBtn" class="md:hidden absolute top-4 left-4 z-50 bg-blue-600/80 text-white p-2 rounded-md" aria-label="Toggle menu">
         <i class="fas fa-bars fa-lg"></i>
     </button>
     
-    <!-- Menu Backdrop (Mobile Only) -->
     <div id="menuBackdrop"></div>
 
-    <!-- Control Panel / Mobile Menu -->
     <div id="controlPanel" class="w-full max-w-[21.6rem] md:w-[21.6rem] bg-gray-800 p-4 shadow-lg control-panel flex flex-col flex-shrink-0 h-screen">
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold text-blue-400">Freemaged <span class="text-xs align-top text-gray-400">v1.3</span></h1>
@@ -252,15 +258,15 @@
             <label class="block text-sm font-medium text-gray-300 mb-1">Upload Image(s) or Paste (Ctrl+V)</label>
             <div class="flex items-center space-x-4">
                  <label class="text-sm font-semibold bg-blue-800 text-blue-300 hover:bg-blue-700 cursor-pointer py-2 px-4 rounded-md whitespace-nowrap">
-                     Choose Files
-                     <input type="file" id="imageUpload" accept="image/*" multiple class="hidden">
+                       Choose Files
+                       <input type="file" id="imageUpload" accept="image/*" multiple class="hidden">
                  </label>
                  <p id="loadedFileName" class="text-sm text-gray-400 truncate flex-grow"></p>
             </div>
         </div>
 
         <div id="imageSelectorContainer" class="mb-4 hidden">
-            <h3 class="text-md font-semibold text-gray-300 mb-2">Select Image to Edit:</h3>
+            <h2 class="text-md font-semibold text-gray-300 mb-2">Select Image to Edit:</h2>
             <div id="imageSelectorList" class="max-h-48 overflow-y-auto bg-gray-700/50 rounded-md p-2 space-y-1">
             </div>
         </div>
@@ -457,7 +463,7 @@
 
         <div id="panelFooter">
             <div class="pt-4 border-t border-gray-700">
-                <h3 class="text-md font-semibold text-gray-300 mb-2">Active Image Info:</h3>
+                <h2 class="text-md font-semibold text-gray-300 mb-2">Active Image Info:</h2>
                 <p class="text-sm text-gray-400">Name: <span id="activeImageName">N/A</span></p>
                 <p class="text-sm text-gray-400">Original: <span id="originalDimensions">N/A</span> (<span id="originalFileSize">N/A</span>)</p>
                 <p class="text-sm text-gray-400">Current: <span id="currentDimensions">N/A</span></p>
@@ -1363,9 +1369,9 @@
                         height = width / ratioValue;
                     } else { // Corners
                          if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                            height = width / ratioValue;
+                             height = width / ratioValue;
                          } else {
-                            width = height * ratioValue;
+                             width = height * ratioValue;
                          }
                     }
                     if (dragInfo.target.includes('n')) y = dragInfo.originalRect.y + dragInfo.originalRect.height - height;
@@ -1444,7 +1450,7 @@
              tempFilters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
              resetAdjustmentControls(); 
              if (shouldRedraw && activeImageIndex !== -1 && imageStore[activeImageIndex]) {
-                  drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
+                   drawImageToCanvasWithFilters(imageStore[activeImageIndex].current, tempFilters);
              }
         }
 
